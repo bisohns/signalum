@@ -1,0 +1,4 @@
+include *.txt
+include README.md
+recursive-include multiprowireless *.py
+prune docs/
