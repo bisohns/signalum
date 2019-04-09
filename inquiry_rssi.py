@@ -97,6 +97,12 @@ def device_inquiry_with_with_rssi(sock):
     duration = 4
     max_responses = 255
     cmd_pkt = struct.pack("BBBBB", 0x33, 0x8b, 0x9e, duration, max_responses)
+    # update the global device name dictionary before sending hci cmd(which changes mode)
+    NAME_DICT.update(
+            dict(
+                bluetooth.discover_devices(lookup_names=True)
+                )
+        )
     bluez.hci_send_cmd(sock, bluez.OGF_LINK_CTL, bluez.OCF_INQUIRY, cmd_pkt)
 
     results = []
@@ -113,9 +119,11 @@ def device_inquiry_with_with_rssi(sock):
                 addr = bluez.ba2str( pkt[1+6*i:1+6*i+6] )
                 rssi = bluetooth.byte_to_signed_int(
                         bluetooth.get_byte(pkt[1+13*nrsp+i]))
-                # create custom socket to retrieve device name
-                #cust_sock = bluez.hci_open_dev(DEVICE_ID)
-                name = bluez.hci_read_remote_name(sock, addr)
+                # retrieve device name, or assign address as name
+                try:
+                    name = NAME_DICT[addr]
+                except:
+                    name = addr
                 results.append( ( addr, rssi, name ) )
                 print("NAME: [%s], MAC: [%s], RSSI: [%d]" % (name, addr, rssi))
         elif event == bluez.EVT_INQUIRY_COMPLETE:
