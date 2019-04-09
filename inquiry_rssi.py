@@ -153,7 +153,7 @@ def animate(i, xs, val_dict, sock):
     xs = xs[-20:]
     for i in val_dict:
         val_dict[i] = val_dict[i][-20:]
-        # if device has dissapeared, append zeros
+        # if device has dissapeared, append zeros to make up length
         if len(val_dict[i]) < len(xs):
             val_dict[i].extend([0 for i in range(len(xs) - len(val_dict[i]))])
         ax.plot(xs, val_dict[i], label=i)
