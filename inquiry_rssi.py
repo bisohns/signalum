@@ -11,6 +11,8 @@ import datetime as dt
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
+VALUES_PER_FRAME = 50
+
 def printpacket(pkt):
     for c in pkt:
         sys.stdout.write("%02x " % struct.unpack("B",c)[0])
@@ -149,10 +151,10 @@ def animate(i, xs, val_dict, sock):
             val_dict[i[0]].extend([0 for i in range(len(xs))])
 
     ax.clear()
-    # limit both axis to 20 values at a time maximum
-    xs = xs[-20:]
+    # limit both axis to VALUES_PER_FRAME values at a time maximum
+    xs = xs[-VALUES_PER_FRAME:]
     for i in val_dict:
-        val_dict[i] = val_dict[i][-20:]
+        val_dict[i] = val_dict[i][-VALUES_PER_FRAME:]
         # if device has dissapeared, append zeros to make up length
         if len(val_dict[i]) < len(xs):
             val_dict[i].extend([0 for i in range(len(xs) - len(val_dict[i]))])
@@ -161,7 +163,7 @@ def animate(i, xs, val_dict, sock):
     ax.legend()
 
     plt.xticks([])
-    plt.subplots_adjust(bottom=0.30)
+    # plt.subplots_adjust(bottom=0.30)
     plt.title("Simulation RSSI over time")
     plt.ylabel("DBMS")
 
@@ -199,7 +201,8 @@ if __name__=="__main__":
     ax = fig.add_subplot(1, 1, 1)
     xs = []
     results = device_inquiry_with_with_rssi(sock) 
+    # initialize dictionary to store real time values of devices
     val_dict = {key: list() for key,value in results}
-    ani = animation.FuncAnimation(fig, animate, fargs=(xs, val_dict, sock), interval=500)
+    ani = animation.FuncAnimation(fig, animate, fargs=(xs, val_dict, sock), interval=100)
     
     plt.show()    
