@@ -13,9 +13,11 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from scipy.interpolate import interp1d
 
+DEVICE_ID = 0
 VALUES_PER_FRAME = 50
 CATEGORY_VALUES = [0, -10, -30, -50, -70]
 OUT_OF_RANGE = (-300, -200)
+NAME_DICT =  dict()
 
 def printpacket(pkt):
     for c in pkt:
@@ -107,11 +109,15 @@ def device_inquiry_with_with_rssi(sock):
             pkt = pkt[3:]
             nrsp = bluetooth.get_byte(pkt[0])
             for i in range(nrsp):
+                # get human readable addr
                 addr = bluez.ba2str( pkt[1+6*i:1+6*i+6] )
                 rssi = bluetooth.byte_to_signed_int(
                         bluetooth.get_byte(pkt[1+13*nrsp+i]))
-                results.append( ( addr, rssi ) )
-                print("[%s] RSSI: [%d]" % (addr, rssi))
+                # create custom socket to retrieve device name
+                #cust_sock = bluez.hci_open_dev(DEVICE_ID)
+                name = bluez.hci_read_remote_name(sock, addr)
+                results.append( ( addr, rssi, name ) )
+                print("NAME: [%s], MAC: [%s], RSSI: [%d]" % (name, addr, rssi))
         elif event == bluez.EVT_INQUIRY_COMPLETE:
             done = True
         elif event == bluez.EVT_CMD_STATUS:
@@ -125,7 +131,7 @@ def device_inquiry_with_with_rssi(sock):
             nrsp = bluetooth.get_byte(pkt[0])
             for i in range(nrsp):
                 addr = bluez.ba2str( pkt[1+6*i:1+6*i+6] )
-                results.append( ( addr, -1 ) )
+                results.append( ( addr, -1 , "UNK") )
                 print("[%s] (no RRSI)" % addr)
         else:
             print("unrecognized packet type 0x%02x" % ptype)
@@ -143,15 +149,18 @@ def animate(i, xs, val_dict, sock):
     
     """
     results = device_inquiry_with_with_rssi(sock)
-    # append datetime as a float
+    # append datetime string as a float to represent time axis
     xs.append(float(dt.datetime.now().strftime("%H.%M%S")))
+    # update name dictionary
+    NAME_DICT.update({i[0]: i[2] for i in results})
+    print(NAME_DICT)
     for i in results:
         try:
             # check for dict key if it exists
             affect_list = val_dict[i[0]]
             affect_list.append(i[1])
         except: 
-            # create new list with prior values of zero
+            # create new list with prior values out of range
             val_dict[i[0]]= list()
             val_dict[i[0]].extend([np.random.random_integers(*OUT_OF_RANGE) \
                  for i in range(len(xs))])
@@ -160,6 +169,7 @@ def animate(i, xs, val_dict, sock):
     # limit both axis to VALUES_PER_FRAME values at a time maximum
     xs = xs[-VALUES_PER_FRAME:]
     for i in val_dict:
+        device_name = NAME_DICT[i]
         val_dict[i] = val_dict[i][-VALUES_PER_FRAME:]
         # if device has dissapeared, append zeros to make up length
         if len(val_dict[i]) < len(xs):
@@ -175,9 +185,9 @@ def animate(i, xs, val_dict, sock):
             f = interp1d(x, y, kind='nearest')
             y_smooth = f(x_new)
             # plot smooth plot with scatter point plots
-            ax.plot(x_new, y_smooth, label=i)
+            ax.plot(x_new, y_smooth, label=device_name)
         else:
-            ax.plot(xs, y, label=i)
+            ax.plot(xs, y, label=device_name)
         #ax.scatter(xs, y)
     # display legend
     ax.legend()
@@ -189,9 +199,8 @@ def animate(i, xs, val_dict, sock):
     # plt.hlines(CATEGORY_VALUES, 0, max(xs), linestyle="dashed")
 
 if __name__=="__main__":
-    dev_id = 0
     try:
-        sock = bluez.hci_open_dev(dev_id)
+        sock = bluez.hci_open_dev(DEVICE_ID)
     except:
         print("error accessing bluetooth device...")
         sys.exit(1)
@@ -223,7 +232,7 @@ if __name__=="__main__":
     xs = []
     results = device_inquiry_with_with_rssi(sock) 
     # initialize dictionary to store real time values of devices
-    val_dict = {key: list() for key,value in results}
+    val_dict = {key: list() for key,value,name in results}
     ani = animation.FuncAnimation(fig, animate, fargs=(xs, val_dict, sock), interval=100)
     
     plt.show()    
