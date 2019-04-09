@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 VALUES_PER_FRAME = 50
+CATEGORY_VALUES = [0, -10, -30, -50, -70]
 
 def printpacket(pkt):
     for c in pkt:
@@ -166,6 +167,7 @@ def animate(i, xs, val_dict, sock):
     # plt.subplots_adjust(bottom=0.30)
     plt.title("Simulation RSSI over time")
     plt.ylabel("DBMS")
+    plt.hlines(CATEGORY_VALUES, 0, max(xs), linestyle="dashed")
 
 if __name__=="__main__":
     dev_id = 0
