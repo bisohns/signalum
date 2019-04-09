@@ -7,12 +7,14 @@ import struct
 import bluetooth._bluetooth as bluez
 import bluetooth
 import time
+import numpy as np
 import datetime as dt
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 VALUES_PER_FRAME = 50
 CATEGORY_VALUES = [0, -10, -30, -50, -70]
+OUT_OF_RANGE = (-300, -200)
 
 def printpacket(pkt):
     for c in pkt:
@@ -149,7 +151,8 @@ def animate(i, xs, val_dict, sock):
         except: 
             # create new list with prior values of zero
             val_dict[i[0]]= list()
-            val_dict[i[0]].extend([0 for i in range(len(xs))])
+            val_dict[i[0]].extend([np.random.random_integers(*OUT_OF_RANGE) \
+                 for i in range(len(xs))])
 
     ax.clear()
     # limit both axis to VALUES_PER_FRAME values at a time maximum
@@ -158,7 +161,8 @@ def animate(i, xs, val_dict, sock):
         val_dict[i] = val_dict[i][-VALUES_PER_FRAME:]
         # if device has dissapeared, append zeros to make up length
         if len(val_dict[i]) < len(xs):
-            val_dict[i].extend([0 for i in range(len(xs) - len(val_dict[i]))])
+            val_dict[i].extend([np.random.random_integers(*OUT_OF_RANGE) \
+                 for i in range(len(xs) - len(val_dict[i]))])
         ax.plot(xs, val_dict[i], label=i)
     # display legend
     ax.legend()
@@ -167,7 +171,7 @@ def animate(i, xs, val_dict, sock):
     # plt.subplots_adjust(bottom=0.30)
     plt.title("Simulation RSSI over time")
     plt.ylabel("DBMS")
-    plt.hlines(CATEGORY_VALUES, 0, max(xs), linestyle="dashed")
+    # plt.hlines(CATEGORY_VALUES, 0, max(xs), linestyle="dashed")
 
 if __name__=="__main__":
     dev_id = 0
