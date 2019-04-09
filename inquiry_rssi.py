@@ -11,6 +11,7 @@ import numpy as np
 import datetime as dt
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from scipy.interpolate import interp1d
 
 VALUES_PER_FRAME = 50
 CATEGORY_VALUES = [0, -10, -30, -50, -70]
@@ -142,7 +143,8 @@ def animate(i, xs, val_dict, sock):
     
     """
     results = device_inquiry_with_with_rssi(sock)
-    xs.append(dt.datetime.now().strftime("%H:%M:%S.%f"))
+    # append datetime as a float
+    xs.append(float(dt.datetime.now().strftime("%H.%M%S")))
     for i in results:
         try:
             # check for dict key if it exists
@@ -163,7 +165,20 @@ def animate(i, xs, val_dict, sock):
         if len(val_dict[i]) < len(xs):
             val_dict[i].extend([np.random.random_integers(*OUT_OF_RANGE) \
                  for i in range(len(xs) - len(val_dict[i]))])
-        ax.plot(xs, val_dict[i], label=i)
+        # smoothen out x axis before display
+        x = np.array(xs)
+        y = np.array(val_dict[i])
+        x_new = np.linspace(x.min(), x.max(), 500)
+        # check if points are enough to interpolate on and use box(nearest) interpolation
+        # to display levels to this
+        if len(x) > 2:
+            f = interp1d(x, y, kind='nearest')
+            y_smooth = f(x_new)
+            # plot smooth plot with scatter point plots
+            ax.plot(x_new, y_smooth, label=i)
+        else:
+            ax.plot(xs, y, label=i)
+        #ax.scatter(xs, y)
     # display legend
     ax.legend()
 
