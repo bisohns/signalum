@@ -7,6 +7,9 @@ import struct
 import bluetooth._bluetooth as bluez
 import bluetooth
 import time
+import datetime as dt
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
 def printpacket(pkt):
     for c in pkt:
@@ -128,35 +131,75 @@ def device_inquiry_with_with_rssi(sock):
 
     return results
 
-dev_id = 0
-try:
-    sock = bluez.hci_open_dev(dev_id)
-except:
-    print("error accessing bluetooth device...")
-    sys.exit(1)
+def animate(i, xs, val_dict, sock):
+    """
+    Instance function to create matplotlib graph
+    
+    """
+    results = device_inquiry_with_with_rssi(sock)
+    xs.append(dt.datetime.now().strftime("%H:%M:%S.%f"))
+    for i in results:
+        try:
+            # check for dict key if it exists
+            affect_list = val_dict[i[0]]
+            affect_list.append(i[1])
+        except: 
+            # create new list with prior values of zero
+            val_dict[i[0]]= list()
+            val_dict[i[0]].extend([0 for i in range(len(xs))])
 
-try:
-    mode = read_inquiry_mode(sock)
-except Exception as e:
-    print("error reading inquiry mode.  ")
-    print("Are you sure this a bluetooth 1.2 device?")
-    print(e)
-    sys.exit(1)
-print("current inquiry mode is %d" % mode)
+    ax.clear()
+    # limit both axis to 20 values at a time maximum
+    xs = xs[-20:]
+    for i in val_dict:
+        val_dict[i] = val_dict[i][-20:]
+        # if device has dissapeared, append zeros
+        if len(val_dict[i]) < len(xs):
+            val_dict[i].extend([0 for i in range(len(xs) - len(val_dict[i]))])
+        ax.plot(xs, val_dict[i], label=i)
+    # display legend
+    ax.legend()
 
-if mode != 1:
-    print("writing inquiry mode...")
+    plt.xticks([])
+    plt.subplots_adjust(bottom=0.30)
+    plt.title("Simulation RSSI over time")
+    plt.ylabel("DBMS")
+
+if __name__=="__main__":
+    dev_id = 0
     try:
-        result = write_inquiry_mode(sock, 1)
+        sock = bluez.hci_open_dev(dev_id)
+    except:
+        print("error accessing bluetooth device...")
+        sys.exit(1)
+    
+    try:
+        mode = read_inquiry_mode(sock)
     except Exception as e:
-        print("error writing inquiry mode.  Are you sure you're root?")
+        print("error reading inquiry mode.  ")
+        print("Are you sure this a bluetooth 1.2 device?")
         print(e)
         sys.exit(1)
-    if result != 0:
-        print("error while setting inquiry mode")
-    print("result: %d" % result)
+    print("current inquiry mode is %d" % mode)
+    
+    if mode != 1:
+        print("writing inquiry mode...")
+        try:
+            result = write_inquiry_mode(sock, 1)
+        except Exception as e:
+            print("error writing inquiry mode.  Are you sure you're root?")
+            print(e)
+            sys.exit(1)
+        if result != 0:
+            print("error while setting inquiry mode")
+        print("result: %d" % result)
 
-while True:
-    device_inquiry_with_with_rssi(sock)
-    time.sleep(3)
-
+    # Create figure for plotting
+    fig = plt.figure("Real Time Bluetooth RSSI")
+    ax = fig.add_subplot(1, 1, 1)
+    xs = []
+    results = device_inquiry_with_with_rssi(sock) 
+    val_dict = {key: list() for key,value in results}
+    ani = animation.FuncAnimation(fig, animate, fargs=(xs, val_dict, sock), interval=500)
+    
+    plt.show()    
