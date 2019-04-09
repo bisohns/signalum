@@ -159,9 +159,7 @@ def animate(i, xs, val_dict, sock):
     results = device_inquiry_with_with_rssi(sock)
     # append datetime string as a float to represent time axis
     xs.append(float(dt.datetime.now().strftime("%H.%M%S")))
-    # update name dictionary
     NAME_DICT.update({i[0]: i[2] for i in results})
-    print(NAME_DICT)
     for i in results:
         try:
             # check for dict key if it exists
@@ -234,6 +232,8 @@ if __name__=="__main__":
             print("error while setting inquiry mode")
         print("result: %d" % result)
 
+    # change background style
+    plt.style.use('dark_background')
     # Create figure for plotting
     fig = plt.figure("Real Time Bluetooth RSSI")
     ax = fig.add_subplot(1, 1, 1)
