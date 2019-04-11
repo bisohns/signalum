@@ -14,6 +14,8 @@ install:
 # Build script (If successfully built - no errors)
 script:
   - pipenv install
+after_success:
+  - python setup.py --version
 
 deploy:
   provider: pypi
@@ -25,3 +27,7 @@ deploy:
 
 after_deploy:
   - pip install signalum
+
+notifications:
+# slack channel notification
+    slack: bisoncorps:urrq42VfAo4zJP2r6lH2dU8Y
