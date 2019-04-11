@@ -62,3 +62,9 @@ Please keep a link to the [original repository](https://github.com/bisoncorps/mu
 ## License (MIT)
 
 This project is opened under the [MIT 2.0 License](https://github.com/bisoncorps/multiprotocol_wireless_detection/blob/master/LICENSE) which allows very broad use for both academic and commercial purposes.
+
+
+## TODO
+- [ ] Optimize application
+- [ ] Create cli application
+- [ ] Create PyQt Bindings
