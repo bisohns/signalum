@@ -1,13 +1,14 @@
 import argparse
+from curses import wrapper
 import logging
 import sys
 import pprint
-try:
-    from .core import bluelyze
-except:
-    from core import bluelyze
 
-logging.basicConfig(stream=sys.stderr, level=logging.INFO)
+try:
+    from .core import bluelyze, term
+except:
+    from core import bluelyze, term
+
 
 def main(args):
     """
@@ -53,4 +54,5 @@ def runner():
     main(args)
 
 if __name__ == '__main__':
+    logging.basicConfig(stream=sys.stderr, level=logging.INFO)
     runner()
