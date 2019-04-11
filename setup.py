@@ -12,22 +12,22 @@ with open("README.md", "r") as fh:
 VERSION = "0.0.1"
 
 setuptools.setup(
-    name="MultiProWireless",
+    name="Signalum",
     version=VERSION,
     author='Domnan Diretnan, Mmadu Manasseh',
     author_email="diretnandomnan@gmail.com",
-    description="Package to detect existing connections from wifi, bluetooth and zigbee",
-    url="https://github.com/deven96/drive_downloader",
+    description="Package to analyze existing connections from wifi and bluetooth",
+    url="https://github.com/bisoncorps/signalum",
     packages=setuptools.find_packages(),
     install_requires=requires,
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="MIT",
-    keywords='bluetooth detect wifi zigbee multiprotocol',
+    keywords='bluetooth detect wifi multiprotocol',
     classifiers=(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
+        "Operating System :: Linux",
     ),
     package_data={
         '': ['*.*'],

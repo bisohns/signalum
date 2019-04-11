@@ -1,7 +1,8 @@
-import numpy as np
 import datetime as dt
-import matplotlib.pyplot as plt
+
 import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+import numpy as np
 
 RANGE = (-200, 0)
 
@@ -11,6 +12,7 @@ ax = fig.add_subplot(1, 1, 1)
 xs = []
 ya = []
 yb = []
+
 # This function is called periodically from FuncAnimation
 def animate(i, xs, ya, yb):
     

@@ -1,16 +1,18 @@
 # performs a simple device inquiry, followed by a remote name request of each
 # discovered device
 
-import os
-import sys
-import struct
-import bluetooth._bluetooth as bluez
-import bluetooth
-import time
-import numpy as np
 import datetime as dt
-import matplotlib.pyplot as plt
+import os
+import struct
+import sys
+import time
+import logging
+
+import bluetooth
+import bluetooth._bluetooth as bluez
 import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+import numpy as np
 from scipy.interpolate import interp1d
 
 DEVICE_ID = 0
@@ -22,7 +24,6 @@ NAME_DICT =  dict()
 def printpacket(pkt):
     for c in pkt:
         sys.stdout.write("%02x " % struct.unpack("B",c)[0])
-    print() 
 
 
 def read_inquiry_mode(sock):
@@ -81,7 +82,7 @@ def write_inquiry_mode(sock, mode):
     if status != 0: return -1
     return 0
 
-def device_inquiry_with_with_rssi(sock):
+def device_inquiry_with_with_rssi(sock, show_name=False):
     # save current filter
     old_filter = sock.getsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, 14)
 
@@ -94,15 +95,13 @@ def device_inquiry_with_with_rssi(sock):
     bluez.hci_filter_set_ptype(flt, bluez.HCI_EVENT_PKT)
     sock.setsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, flt )
 
-    duration = 4
+    duration = 1
     max_responses = 255
     cmd_pkt = struct.pack("BBBBB", 0x33, 0x8b, 0x9e, duration, max_responses)
+    # TODO Optimize code for performance
     # update the global device name dictionary before sending hci cmd(which changes mode)
-    NAME_DICT.update(
-            dict(
-                bluetooth.discover_devices(lookup_names=True)
-                )
-        )
+    if show_name:
+        NAME_DICT.update(dict(bluetooth.discover_devices(lookup_names=True)))
     bluez.hci_send_cmd(sock, bluez.OGF_LINK_CTL, bluez.OCF_INQUIRY, cmd_pkt)
 
     results = []
@@ -142,20 +141,20 @@ def device_inquiry_with_with_rssi(sock):
                 results.append( ( addr, -1 , "UNK") )
                 print("[%s] (no RRSI)" % addr)
         else:
-            print("unrecognized packet type 0x%02x" % ptype)
-        print("event ", event)
-
+            logging.debug("unrecognized packet type 0x%02x" % ptype)
+        logging.debug("event %s", event)
 
     # restore old filter
     sock.setsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, old_filter )
 
     return results
 
-def animate(i, xs, val_dict, sock):
+def animate(i, xs, val_dict, ax, sock):
     """
     Instance function to create matplotlib graph
     
     """
+    # TODO Hide/cutout devices with rssi < -200
     results = device_inquiry_with_with_rssi(sock)
     # append datetime string as a float to represent time axis
     xs.append(float(dt.datetime.now().strftime("%H.%M%S")))
@@ -204,7 +203,9 @@ def animate(i, xs, val_dict, sock):
     plt.ylabel("DBMS")
     # plt.hlines(CATEGORY_VALUES, 0, max(xs), linestyle="dashed")
 
-if __name__=="__main__":
+def bluelyze(**kwargs):
+    _show_graph = kwargs.pop("graph")
+    _show_name = kwargs.pop("show_name")
     try:
         sock = bluez.hci_open_dev(DEVICE_ID)
     except:
@@ -232,15 +233,20 @@ if __name__=="__main__":
             print("error while setting inquiry mode")
         print("result: %d" % result)
 
-    # change background style
-    plt.style.use('dark_background')
-    # Create figure for plotting
-    fig = plt.figure("Real Time Bluetooth RSSI")
-    ax = fig.add_subplot(1, 1, 1)
-    xs = []
-    results = device_inquiry_with_with_rssi(sock) 
-    # initialize dictionary to store real time values of devices
-    val_dict = {key: list() for key,value,name in results}
-    ani = animation.FuncAnimation(fig, animate, fargs=(xs, val_dict, sock), interval=100)
-    
-    plt.show()    
+
+    if _show_graph:
+        # change background style
+        plt.style.use('dark_background')
+        # Create figure for plotting
+        fig = plt.figure("Real Time Bluetooth RSSI")
+        ax = fig.add_subplot(1, 1, 1)
+        xs = []
+        results = device_inquiry_with_with_rssi(sock, show_name=_show_name) 
+        # initialize dictionary to store real time values of devices
+        val_dict = {key: list() for key,value,name in results}
+        ani = animation.FuncAnimation(fig, animate, fargs=(xs, val_dict, ax, sock), interval=100)
+        plt.show()    
+    else:
+        while True:
+            device_inquiry_with_with_rssi(sock, show_name=_show_name)
+
