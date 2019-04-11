@@ -1,2 +1,6 @@
 wifi
 pybluez
+pandas
+numpy
+matplotlib
+scipy
