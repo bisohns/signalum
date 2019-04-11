@@ -2,7 +2,10 @@ import argparse
 import logging
 import sys
 import pprint
-from core._bluetooth import bluelyze
+try:
+    from .core import bluelyze
+except:
+    from core import bluelyze
 
 logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
@@ -10,23 +13,37 @@ def main(args):
     """
         Executes logic from parsed arguments
     """
-    print(args)
+    logging.debug(args)
     if args['protocol'] == 'wifi':
         pass
         # TODO Add wifi integration
     elif args['protocol'] == 'bluetooth':
         bluelyze(graph=args["show_graph"], show_name=args["show_name"])
     elif args['protocol'] == 'all':
+        print("Procedure for all protocol not yet implemented, select bluetooth")
         pass
        # TODO Add all implementation
     else:
         sys.exit(f'Protocol <args["protocol"]> does not exist. It can only be one of bluetooth or wifi')
 
+def custom_usage(name=None):
+    """
+    custom usage message to override `cli.py`
+    """
+    return """
+    usage: signalyze 
+    [-h] 
+    [-p PROTOCOL] 
+    [-o OUTPUT] 
+    [--show-graph]
+    [--show-name]
+    """
+
 def runner():
     """
     runner that handles parsing logic
     """
-    parser = argparse.ArgumentParser(description='Signalyze')
+    parser = argparse.ArgumentParser(description='Signalyze', usage=custom_usage())
     parser.add_argument('-p','--protocol', help='A protocol to analyze (default: all)', default='all')
     parser.add_argument('--show-graph', action="store_true", help='Show Realtime graph of nearby devices')
     parser.add_argument('-o', '--output', help='path to store output csv file', default=False)

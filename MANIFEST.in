@@ -1,2 +1,3 @@
 include README.md
-recursive-include core utils *.py
+recursive-include signalum *.py
+recursive-include scripts *.sh

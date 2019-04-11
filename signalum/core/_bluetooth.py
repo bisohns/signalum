@@ -146,7 +146,8 @@ def device_inquiry_with_with_rssi(sock, show_name=False):
 
     # restore old filter
     sock.setsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, old_filter )
-
+    if len(results)< 1:
+        print("No devices found in nearby range")
     return results
 
 def animate(i, xs, val_dict, ax, sock):
