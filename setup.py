@@ -30,7 +30,7 @@ setuptools.setup(
         "Operating System :: POSIX",
     ),
     scripts = [
-            'scripts/signalyze'
+            'signalum/scripts/signalyze'
         ],
     package_data={
         '': ['*.*'],
