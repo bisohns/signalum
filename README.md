@@ -25,9 +25,8 @@ A Linux Package to detect and analyze existing connections from wifi and bluetoo
 
     sudo apt-get install bluetooth libbluetooth-dev
 
-    pip install pipenv
+    pip install requirements.txt
 
-    pipenv install
 ```
 
 
