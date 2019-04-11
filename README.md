@@ -54,6 +54,6 @@ Signalum can be used from the linux terminal as a cli command
 
 You are very welcome to modify and use them in your own projects.
 
-## License (BSD)
+## License (MIT)
 
-This project is opened under the [BSD License](https://github.com/bisoncorps/signalum/blob/master/LICENSE) which allows very broad use for both academic and commercial purposes.
+This project is opened under the [MIT 2.0 License](https://github.com/bisoncorps/signalum/blob/master/LICENSE) which allows very broad use for both academic and commercial purposes.
