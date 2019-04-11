@@ -32,7 +32,8 @@ A Linux Package to detect and analyze existing connections from wifi and bluetoo
 
 
 ## Usage
-Signalum can be used from the linux terminal as a cli command
+
+Signalum comes with a cli tool called `signalyze`
 
 ```bash
    signalyze [-h] [-p PROTOCOL] [--show-graph] [-o OUTPUT] [--show-name]

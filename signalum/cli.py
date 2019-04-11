@@ -2,7 +2,7 @@ import argparse
 import logging
 import sys
 import pprint
-from core._bluetooth import bluelyze
+from core import bluelyze
 
 logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
@@ -10,7 +10,7 @@ def main(args):
     """
         Executes logic from parsed arguments
     """
-    print(args)
+    logging.debug(args)
     if args['protocol'] == 'wifi':
         pass
         # TODO Add wifi integration

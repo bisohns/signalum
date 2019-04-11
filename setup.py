@@ -9,7 +9,7 @@ requires = [line.strip('\n') for line in open(REQUIREMENTS).readlines()]
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 
 setuptools.setup(
     name="Signalum",
@@ -29,8 +29,12 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: POSIX",
     ),
+    scripts = [
+            'scripts/signalyze.sh'
+        ],
     package_data={
         '': ['*.*'],
     },
     include_package_data=True,
+    zip_safe=False,
 )
