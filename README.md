@@ -1,14 +1,13 @@
-# MultiProtocol Wireless Detection
+# Signalum
 
-Package to detect existing connections from wifi, bluetooth and zigbee
+A Linux Package to detect and analyze existing connections from wifi and bluetooth
 
-[![Build Status](https://travis-ci.org/bisoncorps/multiprotocol_wireless_detection.svg?branch=master)](https://travis-ci.com/bisoncorps/multiprotocol_wireless_detection) [![PyPI version](https://badge.fury.io/py/MultiProWireless.svg)](https://badge.fury.io/py/MultiProWireless)
+[![Build Status](https://travis-ci.org/bisoncorps/signalum.svg?branch=master)](https://travis-ci.com/bisoncorps/signalum)
+[![PyPI version](https://badge.fury.io/py/Signalum.svg)](https://badge.fury.io/py/Signalum)
 
-- [MultiProtocol Wireless Detection](#multiprotocol-wireless-detection)
+- [Signalum](#signalum)
   - [Installation](#installation)
   - [Development](#development)
-  - [Documentation](#documentation)
-  - [Running the tests](#running-the-tests)
   - [Usage](#usage)
   - [Contribution](#contribution)
   - [License (MIT)](#license-mit)
@@ -16,15 +15,14 @@ Package to detect existing connections from wifi, bluetooth and zigbee
 ## Installation
 
 ```bash
-    pip install multiprowireless
+    pip install signalum
 ```
 
 ## Development
 
 ```bash
-    git clone git@github.com:bisoncorps/multiprotocol_wireless_detection.git
+    git clone git@github.com:bisoncorps/signalum.git
 
-    # for linux bluetooth
     sudo apt-get install bluetooth libbluetooth-dev
 
     pip install pipenv
@@ -32,39 +30,30 @@ Package to detect existing connections from wifi, bluetooth and zigbee
     pipenv install
 ```
 
-## Documentation
 
-[Github Pages](https://bisoncorps.github.io/multiprotocol_wireless_detection)
-
-## Running the tests
-
-```bash
-    cd multiprotocol_wireless_detection/multiprowireless/
-```
-
-```bash
-    python tests/__init__.py
-```
 
 ## Usage
+Signalum can be used from the linux terminal as a cli command
 
-```python
-    from multiprowireless import scanner
+```bash
+   signalyze [-h] [-p PROTOCOL] [--show-graph] [-o OUTPUT] [--show-name]
+
+  optional arguments:
+    -h, --help            show this help message and exit
+    -p PROTOCOL, --protocol PROTOCOL
+                          A protocol to analyze (default: all)
+    --show-graph          Show Realtime graph of nearby devices
+    -o OUTPUT, --output OUTPUT
+                          path to store output csv file
+    --show-name           Show Device name and mac address
 
 ```
+
 
 ## Contribution
 
 You are very welcome to modify and use them in your own projects.
 
-Please keep a link to the [original repository](https://github.com/bisoncorps/multiprotocol_wireless_detection). If you have made a fork with substantial modifications that you feel may be useful, then please [open a new issue on GitHub](https://github.com/bisoncorps/multiprotocol_wireless_detection/issues) with a link and short description.
+## License (BSD)
 
-## License (MIT)
-
-This project is opened under the [MIT 2.0 License](https://github.com/bisoncorps/multiprotocol_wireless_detection/blob/master/LICENSE) which allows very broad use for both academic and commercial purposes.
-
-
-## TODO
-- [ ] Optimize application
-- [ ] Create cli application
-- [ ] Create PyQt Bindings
+This project is opened under the [BSD License](https://github.com/bisoncorps/signalum/blob/master/LICENSE) which allows very broad use for both academic and commercial purposes.

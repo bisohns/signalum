@@ -28,9 +28,9 @@ def runner():
     """
     parser = argparse.ArgumentParser(description='Signalyze')
     parser.add_argument('-p','--protocol', help='A protocol to analyze (default: all)', default='all')
-    parser.add_argument('--show-graph', action="store_true", help='Show graph or not (default: False)', default=False)
+    parser.add_argument('--show-graph', action="store_true", help='Show Realtime graph of nearby devices')
     parser.add_argument('-o', '--output', help='path to store output csv file', default=False)
-    parser.add_argument('--show-name', action="store_true", help='Show Device name and mac address', default=False)
+    parser.add_argument('--show-name', action="store_true", help='Show Device name and mac address')
 
     args = vars(parser.parse_args())
     main(args)
