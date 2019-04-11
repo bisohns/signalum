@@ -106,7 +106,7 @@ def device_inquiry_with_with_rssi(sock, show_name=False):
     bluez.hci_send_cmd(sock, bluez.OGF_LINK_CTL, bluez.OCF_INQUIRY, cmd_pkt)
 
     results = []
-    data = ""
+    data = f"{term.underline}Name \t\t\t MAC Address \t\t\t RSSI\n{term.normal}"
 
     done = False
     while not done:
@@ -126,7 +126,7 @@ def device_inquiry_with_with_rssi(sock, show_name=False):
                 except:
                     name = addr
                 results.append( ( addr, rssi, name ) )
-                data += ("NAME: [%s], MAC: [%s], RSSI: [%d]\n" % (name, addr, rssi))
+                data += ("%s\t %s\t\t %d\n" % (name, addr, rssi))
         elif event == bluez.EVT_INQUIRY_COMPLETE:
             done = True
         elif event == bluez.EVT_CMD_STATUS:
