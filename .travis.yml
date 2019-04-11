@@ -7,9 +7,13 @@ branches:
   only:
     - master
 
+before_install:
+  - sudo apt-get install bluetooth libbluetooth-dev
 # Build script (If successfully built - no errors)
 script:
-  - pip install requirements.txt
+  - pip install -r requirements.txt
+after_success:
+  - python setup.py --version
 
 deploy:
   provider: pypi
@@ -18,6 +22,10 @@ deploy:
   all_branches: true
   condition: $TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+
   skip_existing: true
-
 after_deploy:
   - pip install signalum
+  - python -c "import signalum"
+
+notifications:
+# slack channel notification
+    slack: bisoncorps:urrq42VfAo4zJP2r6lH2dU8Y
