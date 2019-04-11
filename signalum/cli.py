@@ -2,7 +2,7 @@ import argparse
 import logging
 import sys
 import pprint
-from core import bluelyze
+from .core import bluelyze
 
 logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
@@ -17,6 +17,7 @@ def main(args):
     elif args['protocol'] == 'bluetooth':
         bluelyze(graph=args["show_graph"], show_name=args["show_name"])
     elif args['protocol'] == 'all':
+        print("Procedure for all protocol not yet implemented, select bluetooth")
         pass
        # TODO Add all implementation
     else:
