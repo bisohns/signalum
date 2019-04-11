@@ -1,3 +1,4 @@
+include *.txt
 include README.md
 recursive-include signalum *.py
 recursive-include scripts *.sh
