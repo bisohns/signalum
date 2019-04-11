@@ -7,13 +7,9 @@ branches:
   only:
     - master
 
-# Command to install dependencies.
-install:
-  - pip install pipenv
-
 # Build script (If successfully built - no errors)
 script:
-  - pipenv install
+  - pip install requirements.txt
 
 deploy:
   provider: pypi
