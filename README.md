@@ -2,7 +2,7 @@
 
 A Linux Package to detect and analyze existing connections from wifi and bluetooth
 
-[![Build Status](https://travis-ci.org/bisoncorps/signalum.svg?branch=master)](https://travis-ci.com/bisoncorps/signalum)
+[![Build Status](https://travis-ci.com/bisoncorps/signalum.svg?branch=master)](https://travis-ci.com/bisoncorps/signalum)
 [![PyPI version](https://badge.fury.io/py/Signalum.svg)](https://badge.fury.io/py/Signalum)
 
 - [Signalum](#signalum)
