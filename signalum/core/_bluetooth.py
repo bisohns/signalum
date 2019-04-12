@@ -173,13 +173,13 @@ def device_inquiry_with_with_rssi(sock, show_name=False):
 #         print("No devices found in nearby range")
     return results
 
-def animate(i, xs, val_dict, ax, sock):
+def animate(i, xs, val_dict, ax, sock, show_name=False):
     """
     Instance function to create matplotlib graph
     
     """
     # TODO Hide/cutout devices with rssi < -200
-    results = device_inquiry_with_with_rssi(sock)
+    results = device_inquiry_with_with_rssi(sock, show_name=show_name)
     # append datetime string as a float to represent time axis
     xs.append(float(dt.datetime.now().strftime("%H.%M%S")))
     NAME_DICT.update({i[0]: i[2] for i in results})
@@ -245,10 +245,11 @@ def bluelyze(**kwargs):
         print("Are you sure this a bluetooth 1.2 device?")
         print(e)
         sys.exit(1)
-    print("current inquiry mode is %d" % mode)
+    logging.debug("current inquiry mode is %d" % mode)
+    print("Initializing...")
     
     if mode != 1:
-        print("writing inquiry mode...")
+        logging.debug("writing inquiry mode...")
         try:
             result = write_inquiry_mode(sock, 1)
         except Exception as e:
@@ -257,7 +258,7 @@ def bluelyze(**kwargs):
             sys.exit(1)
         if result != 0:
             print("error while setting inquiry mode")
-        print("result: %d" % result)
+        logging.debug("result: %d" % result)
 
 
     if show_graph:
@@ -270,7 +271,7 @@ def bluelyze(**kwargs):
         results = device_inquiry_with_with_rssi(sock, show_name=show_name) 
         # initialize dictionary to store real time values of devices
         val_dict = {key: list() for key,value,name in results}
-        ani = animation.FuncAnimation(fig, animate, fargs=(xs, val_dict, ax, sock), interval=100)
+        ani = animation.FuncAnimation(fig, animate, fargs=(xs, val_dict, ax, sock, show_name), interval=100)
         plt.show()    
     else:
         while True:

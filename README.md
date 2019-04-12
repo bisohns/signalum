@@ -34,8 +34,17 @@ A Linux Package to detect and analyze existing connections from wifi and bluetoo
 ## Usage
 
 Signalum comes with a cli tool called `signalyze`
+![Screenshot](_screenshot.png)
 
 ```bash
+  ▄▄▄▄    ▄                         ▀▀█           ▄▄▄▄▄▄
+ █▀   ▀   █     ▄▄▄▄  ▄ ▄▄    ▄▄▄     █    ▄   ▄      █▀  ▄▄▄
+ ▀█▄▄▄    █    █▀ ▀█  █▀  █  ▀   █    █    ▀▄ ▄▀    ▄█   █▀  █
+     ▀█   ▀    █   █  █   █  ▄▀▀▀█    █     █▄█    ▄▀    █▀▀▀▀
+ ▀▄▄▄█▀   █    ▀█▄▀█  █   █  ▀▄▄▀█    ▀▄▄   ▀█    ██▄▄▄▄ ▀█▄▄▀
+                ▄  █                        ▄▀
+                 ▀▀                        ▀▀
+                 ▀▀                        ▀▀
    signalyze [-h] [-p PROTOCOL] [--show-graph] [-o OUTPUT] [--show-name]
 
   optional arguments:
