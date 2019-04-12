@@ -118,6 +118,7 @@ def device_inquiry_with_with_rssi(sock, show_name=False):
     # TODO Optimize code for performance
     # update the global device name dictionary before sending hci cmd(which changes mode)
     if show_name:
+        print("polling for device names...")
         NAME_DICT.update(dict(bluetooth.discover_devices(lookup_names=True)))
     bluez.hci_send_cmd(sock, bluez.OGF_LINK_CTL, bluez.OCF_INQUIRY, cmd_pkt)
 
