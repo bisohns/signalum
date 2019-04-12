@@ -149,3 +149,17 @@ MINOR CLASS = {
         "001111": "Personal Mobility device",  
     },           
 }
+
+SERVICES = {
+ '13': "Limited Discoverable Mode",
+ '14': "(reserved)",   
+ '15': "(reserved)",   
+ '16': "Positioning",   
+ '17': "Networking",   
+ '18': "Rendering",   
+ '19': "Capturing",   
+ '20': "Object Transfer",   
+ '21': "Audio",   
+ '22': "Telephony",   
+ '23': "Information",   
+}
