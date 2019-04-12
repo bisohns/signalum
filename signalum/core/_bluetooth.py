@@ -220,7 +220,7 @@ def animate(i, xs, val_dict, ax, sock, show_name=False):
         else:
             ax.plot(xs, y, label=device_name)
         #ax.scatter(xs, y)
-    # display legend
+    # display legend, attempt to supress warnings
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         ax.legend()
