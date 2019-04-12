@@ -27,6 +27,20 @@ def printpacket(pkt):
         sys.stdout.write("%02x " % struct.unpack("B",c)[0])
 
 
+def rssi_to_colour_str(rssi):
+    color = None
+    if -30 < rssi < 0:
+        color = term.green
+    elif -50 < rssi < -30:
+        color = term.yellow
+    elif -70 < rssi < -90:
+        color = term.magenta
+    else:
+        color = term.red
+    return f"{color}{rssi}{term.normal}"
+
+
+
 def read_inquiry_mode(sock):
     """returns the current mode, or -1 on failure"""
     # save current filter
@@ -126,7 +140,7 @@ def device_inquiry_with_with_rssi(sock, show_name=False):
                 except:
                     name = addr
                 results.append( ( addr, rssi, name ) )
-                data += ("%s\t %s\t\t %d\n" % (name, addr, rssi))
+                data += ("%s\t %s\t\t %s\n" % (name, addr, rssi_to_colour_str(rssi)))
         elif event == bluez.EVT_INQUIRY_COMPLETE:
             done = True
         elif event == bluez.EVT_CMD_STATUS:
