@@ -14,6 +14,8 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
+from tabulate import tabulate
+from ._base import show_header, term
 
 DEVICE_ID = 0
 VALUES_PER_FRAME = 50
@@ -24,6 +26,20 @@ NAME_DICT =  dict()
 def printpacket(pkt):
     for c in pkt:
         sys.stdout.write("%02x " % struct.unpack("B",c)[0])
+
+
+def rssi_to_colour_str(rssi):
+    color = None
+    if -30 < rssi < 0:
+        color = term.green
+    elif -50 < rssi < -30:
+        color = term.yellow
+    elif -70 < rssi < -90:
+        color = term.magenta
+    else:
+        color = term.red
+    return f"{color}{rssi}{term.normal}"
+
 
 
 def read_inquiry_mode(sock):
@@ -105,6 +121,8 @@ def device_inquiry_with_with_rssi(sock, show_name=False):
     bluez.hci_send_cmd(sock, bluez.OGF_LINK_CTL, bluez.OCF_INQUIRY, cmd_pkt)
 
     results = []
+    headers =["Name", "MAC Address", "RSSI"]
+    data = []
 
     done = False
     while not done:
@@ -124,7 +142,7 @@ def device_inquiry_with_with_rssi(sock, show_name=False):
                 except:
                     name = addr
                 results.append( ( addr, rssi, name ) )
-                print("NAME: [%s], MAC: [%s], RSSI: [%d]" % (name, addr, rssi))
+                data.append([name, addr, rssi_to_colour_str(rssi)])
         elif event == bluez.EVT_INQUIRY_COMPLETE:
             done = True
         elif event == bluez.EVT_CMD_STATUS:
@@ -146,17 +164,22 @@ def device_inquiry_with_with_rssi(sock, show_name=False):
 
     # restore old filter
     sock.setsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, old_filter )
-    if len(results)< 1:
-        print("No devices found in nearby range")
+    # print all the data at once since blessings clears the screen just before
+    if len(results):
+        print(term.clear())
+        show_header()
+        print(tabulate(data, headers=headers))
+#     if len(results)< 1:
+#         print("No devices found in nearby range")
     return results
 
-def animate(i, xs, val_dict, ax, sock):
+def animate(i, xs, val_dict, ax, sock, show_name=False):
     """
     Instance function to create matplotlib graph
     
     """
     # TODO Hide/cutout devices with rssi < -200
-    results = device_inquiry_with_with_rssi(sock)
+    results = device_inquiry_with_with_rssi(sock, show_name=show_name)
     # append datetime string as a float to represent time axis
     xs.append(float(dt.datetime.now().strftime("%H.%M%S")))
     NAME_DICT.update({i[0]: i[2] for i in results})
@@ -201,12 +224,14 @@ def animate(i, xs, val_dict, ax, sock):
     plt.xticks([])
     # plt.subplots_adjust(bottom=0.30)
     plt.title("Simulation RSSI over time")
-    plt.ylabel("DBMS")
+    plt.ylabel("RSSI")
     # plt.hlines(CATEGORY_VALUES, 0, max(xs), linestyle="dashed")
 
 def bluelyze(**kwargs):
-    _show_graph = kwargs.pop("graph")
-    _show_name = kwargs.pop("show_name")
+    print(term.clear())
+    show_header()
+    show_graph = kwargs.pop("graph")
+    show_name = kwargs.pop("show_name")
     try:
         sock = bluez.hci_open_dev(DEVICE_ID)
     except:
@@ -220,10 +245,11 @@ def bluelyze(**kwargs):
         print("Are you sure this a bluetooth 1.2 device?")
         print(e)
         sys.exit(1)
-    print("current inquiry mode is %d" % mode)
+    logging.debug("current inquiry mode is %d" % mode)
+    print("Initializing...")
     
     if mode != 1:
-        print("writing inquiry mode...")
+        logging.debug("writing inquiry mode...")
         try:
             result = write_inquiry_mode(sock, 1)
         except Exception as e:
@@ -232,22 +258,22 @@ def bluelyze(**kwargs):
             sys.exit(1)
         if result != 0:
             print("error while setting inquiry mode")
-        print("result: %d" % result)
+        logging.debug("result: %d" % result)
 
 
-    if _show_graph:
+    if show_graph:
         # change background style
         plt.style.use('dark_background')
         # Create figure for plotting
-        fig = plt.figure("Real Time Bluetooth RSSI")
+        fig = plt.figure("Signalum BT Graph")
         ax = fig.add_subplot(1, 1, 1)
         xs = []
-        results = device_inquiry_with_with_rssi(sock, show_name=_show_name) 
+        results = device_inquiry_with_with_rssi(sock, show_name=show_name) 
         # initialize dictionary to store real time values of devices
         val_dict = {key: list() for key,value,name in results}
-        ani = animation.FuncAnimation(fig, animate, fargs=(xs, val_dict, ax, sock), interval=100)
+        ani = animation.FuncAnimation(fig, animate, fargs=(xs, val_dict, ax, sock, show_name), interval=100)
         plt.show()    
     else:
         while True:
-            device_inquiry_with_with_rssi(sock, show_name=_show_name)
+            device_inquiry_with_with_rssi(sock, show_name=show_name)
 
