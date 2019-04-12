@@ -46,7 +46,7 @@ Signalum comes with a cli tool called `signalyze`
                 ▄  █                        ▄▀
                  ▀▀                        ▀▀
                  ▀▀                        ▀▀
-   signalyze [-h] [-p PROTOCOL] [--show-graph] [-o OUTPUT] [--show-name]
+   usage: signalyze [-h] [-p PROTOCOL] [-o OUTPUT] ([--show-graph] OR [--show-extra-info]) [--show-name]
 
   optional arguments:
     -h, --help            show this help message and exit
