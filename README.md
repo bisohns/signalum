@@ -3,6 +3,7 @@
 A Linux Package to detect and analyze existing connections from wifi and bluetooth
 
 [![Build Status](https://travis-ci.com/bisoncorps/signalum.svg?branch=master)](https://travis-ci.com/bisoncorps/signalum)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI version](https://badge.fury.io/py/Signalum.svg)](https://badge.fury.io/py/Signalum)
 
 - [Signalum](#signalum)
@@ -45,7 +46,7 @@ Signalum comes with a cli tool called `signalyze`
                 ▄  █                        ▄▀
                  ▀▀                        ▀▀
                  ▀▀                        ▀▀
-   signalyze [-h] [-p PROTOCOL] [--show-graph] [-o OUTPUT] [--show-name]
+   usage: signalyze [-h] [-p PROTOCOL] [-o OUTPUT] ([--show-graph] OR [--show-extra-info]) [--show-name]
 
   optional arguments:
     -h, --help            show this help message and exit
