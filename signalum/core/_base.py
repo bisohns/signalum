@@ -30,7 +30,7 @@ def get_logo():
     https://github.com/bisoncorps/signalum\n\n
     """)
 
-MAJOR_CLASS = {
+MAJOR_CLASSES = {
     "00000": "Miscellanous",
     "00001": "Computer",
     "00010": "Phone",
@@ -45,7 +45,7 @@ MAJOR_CLASS = {
     
 }
 
-MINOR CLASS = {
+MINOR_CLASSES = {
 
     "Computer": {
         "000000": "Uncategorized",
@@ -147,13 +147,13 @@ MINOR CLASS = {
         "001101": "Ankle Prosthesis",  
         "001110": "Generic Health Manager",  
         "001111": "Personal Mobility device",  
-    },           
+    }, 
+
+    "XXXX": {},          
 }
 
 SERVICES = {
  '13': "Limited Discoverable Mode",
- '14': "(reserved)",   
- '15': "(reserved)",   
  '16': "Positioning",   
  '17': "Networking",   
  '18': "Rendering",   

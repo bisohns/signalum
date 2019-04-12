@@ -19,7 +19,10 @@ def main(args):
         pass
         # TODO Add wifi integration
     elif args['protocol'] == 'bluetooth':
-        bluelyze(graph=args["show_graph"], show_name=args["show_name"])
+        bluelyze(
+            graph=args["show_graph"], 
+            show_name=args["show_name"],
+            show_extra_info=args["show_extra_info"])
     elif args['protocol'] == 'all':
         print("Procedure for all protocol not yet implemented, select bluetooth")
        # TODO Add all implementation
@@ -41,9 +44,10 @@ def runner():
     """
     parser = argparse.ArgumentParser(description='Signalyze', usage=custom_usage())
     parser.add_argument('-p','--protocol', help='A protocol to analyze (default: all)', default='all')
-    parser.add_argument('--show-graph', action="store_true", help='Show Realtime graph of nearby devices')
     parser.add_argument('-o', '--output', help='path to store output csv file', default=False)
+    parser.add_argument('--show-graph', action="store_true", help='Show Realtime graph of nearby devices')
     parser.add_argument('--show-name', action="store_true", help='Show Device name and mac address')
+    parser.add_argument('--show-extra-info', action="store_true", help='Show extra information like services and device classification')
 
     args = vars(parser.parse_args())
     main(args)
