@@ -4,6 +4,7 @@ term = Terminal()
 
 # This was generated using toilet
 def show_header():
+    print(term.clear())
     print("""
   ▄▄▄▄    ▄                         ▀▀█           ▄▄▄▄▄▄       
  █▀   ▀   █     ▄▄▄▄  ▄ ▄▄    ▄▄▄     █    ▄   ▄      █▀  ▄▄▄  
