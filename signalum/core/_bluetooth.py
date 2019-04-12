@@ -7,6 +7,7 @@ import struct
 import sys
 import time
 import logging
+import warnings
 
 import bluetooth
 import bluetooth._bluetooth as bluez
@@ -219,11 +220,14 @@ def animate(i, xs, val_dict, ax, sock, show_name=False):
             ax.plot(xs, y, label=device_name)
         #ax.scatter(xs, y)
     # display legend
-    ax.legend()
-
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ax.legend()
+            
     plt.xticks([])
+    plt.ylim(-100, 0)
     # plt.subplots_adjust(bottom=0.30)
-    plt.title("Simulation RSSI over time")
+    plt.title("Bluetooth Devices RSSI against time")
     plt.ylabel("RSSI")
     # plt.hlines(CATEGORY_VALUES, 0, max(xs), linestyle="dashed")
 
@@ -262,10 +266,11 @@ def bluelyze(**kwargs):
 
 
     if show_graph:
+        # create general figure object 
+        fig = plt.figure("Signalum Combined Graphs")
         # change background style
-        plt.style.use('dark_background')
-        # Create figure for plotting
-        fig = plt.figure("Signalum BT Graph")
+        plt.style.use('seaborn')
+        
         ax = fig.add_subplot(1, 1, 1)
         xs = []
         results = device_inquiry_with_with_rssi(sock, show_name=show_name) 
