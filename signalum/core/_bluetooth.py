@@ -14,6 +14,7 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
+from tabulate import tabulate
 from ._base import show_header, term
 
 DEVICE_ID = 0
@@ -120,7 +121,8 @@ def device_inquiry_with_with_rssi(sock, show_name=False):
     bluez.hci_send_cmd(sock, bluez.OGF_LINK_CTL, bluez.OCF_INQUIRY, cmd_pkt)
 
     results = []
-    data = f"{term.underline}Name \t\t\t MAC Address \t\t\t RSSI\n{term.normal}"
+    headers =["Name", "MAC Address", "RSSI"]
+    data = []
 
     done = False
     while not done:
@@ -140,7 +142,7 @@ def device_inquiry_with_with_rssi(sock, show_name=False):
                 except:
                     name = addr
                 results.append( ( addr, rssi, name ) )
-                data += ("%s\t %s\t\t %s\n" % (name, addr, rssi_to_colour_str(rssi)))
+                data.append([name, addr, rssi_to_colour_str(rssi)])
         elif event == bluez.EVT_INQUIRY_COMPLETE:
             done = True
         elif event == bluez.EVT_CMD_STATUS:
@@ -166,7 +168,7 @@ def device_inquiry_with_with_rssi(sock, show_name=False):
     if len(results):
         print(term.clear())
         show_header()
-        print(data)
+        print(tabulate(data, headers=headers))
 #     if len(results)< 1:
 #         print("No devices found in nearby range")
     return results
@@ -222,7 +224,7 @@ def animate(i, xs, val_dict, ax, sock):
     plt.xticks([])
     # plt.subplots_adjust(bottom=0.30)
     plt.title("Simulation RSSI over time")
-    plt.ylabel("DBMS")
+    plt.ylabel("RSSI")
     # plt.hlines(CATEGORY_VALUES, 0, max(xs), linestyle="dashed")
 
 def bluelyze(**kwargs):
@@ -262,7 +264,7 @@ def bluelyze(**kwargs):
         # change background style
         plt.style.use('dark_background')
         # Create figure for plotting
-        fig = plt.figure("Real Time Bluetooth RSSI")
+        fig = plt.figure("Signalum BT Graph")
         ax = fig.add_subplot(1, 1, 1)
         xs = []
         results = device_inquiry_with_with_rssi(sock, show_name=show_name) 

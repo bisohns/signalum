@@ -4,4 +4,5 @@ pandas
 numpy
 matplotlib
 scipy
+tabulate
 blessed
