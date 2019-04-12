@@ -5,9 +5,9 @@ import sys
 import pprint
 
 try:
-    from .core import bluelyze, term
+    from .core import bluelyze, term, get_logo
 except:
-    from core import bluelyze, term
+    from core import bluelyze, term, get_logo
 
 
 def main(args):
@@ -22,7 +22,6 @@ def main(args):
         bluelyze(graph=args["show_graph"], show_name=args["show_name"])
     elif args['protocol'] == 'all':
         print("Procedure for all protocol not yet implemented, select bluetooth")
-        pass
        # TODO Add all implementation
     else:
         sys.exit(f'Protocol <args["protocol"]> does not exist. It can only be one of bluetooth or wifi')
@@ -31,13 +30,9 @@ def custom_usage(name=None):
     """
     custom usage message to override `cli.py`
     """
-    return """
-    usage: signalyze 
-    [-h] 
-    [-p PROTOCOL] 
-    [-o OUTPUT] 
-    [--show-graph]
-    [--show-name]
+    return f"""
+    {get_logo()}
+    usage: signalyze [-h] [-p PROTOCOL] [-o OUTPUT] [--show-graph] [--show-name]
     """
 
 def runner():
