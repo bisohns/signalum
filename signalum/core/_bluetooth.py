@@ -8,6 +8,7 @@ import sys
 import time
 import logging
 import warnings
+import binascii
 
 import bluetooth
 import bluetooth._bluetooth as bluez
@@ -16,20 +17,103 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
 from tabulate import tabulate
-from ._base import show_header, term
+from ._base import show_header, term, \
+    MAJOR_CLASSES, MINOR_CLASSES, SERVICES
 
 DEVICE_ID = 0
 VALUES_PER_FRAME = 50
 CATEGORY_VALUES = [0, -10, -30, -50, -70]
 OUT_OF_RANGE = (-300, -200)
 NAME_DICT =  dict()
+EXTRA_INFO_DICT = dict()
 
 def printpacket(pkt):
     for c in pkt:
         sys.stdout.write("%02x " % struct.unpack("B",c)[0])
 
+def get_device_extra(addr):
+    """
+    return the extra device info from the global dict
+    """
+    try:
+        _info_dict = EXTRA_INFO_DICT[addr]
+        major_device = _info_dict.get("major_device", "XXXX")
+        minor_device = _info_dict.get("minor_device", "XXXX")
+        services = _info_dict.get("services", "XXXX")
+        return [major_device, minor_device, services]
+    except:
+        print(f"Device MAC {addr} does not exist in details dict")
+
+def populate_info_dict():
+    """
+    call to populate the global info dictionary
+    """
+    
+    devices = bluetooth.discover_devices(lookup_class=True)
+    # extract hex value dictionary
+    hex_dict = {i[0]: "%X" %i[1] for i in devices}
+    for i in hex_dict:
+        if i not in EXTRA_INFO_DICT:
+            EXTRA_INFO_DICT[i] = {
+                "major_device": "",
+                "minor_device": "",
+                "services": "",
+            }
+    # extract byte dictionary
+    byte_dict = {i: binascii.unhexlify(hex_dict[i]) for i in hex_dict}
+    # extract bit dictionary using big byte-decode
+    bit_dict = {i: bin(int.from_bytes(byte_dict[i], 'big')) for i in byte_dict}
+
+
+    serv_numbers = [13, 16, 17, 18, 19, 20, 21, 22, 23]
+    services = ""
+    for i in bit_dict:
+        bit_stream = bit_dict[i]
+        major_stream = bit_stream[-13:-8]
+        major_class = MAJOR_CLASSES.get(major_stream, "XXXX")
+        minor_class = "XXXX"
+        if major_class in ("Miscellaneous", "Device code not specified"):
+            minor_class = "XXXX"
+            services = "XXXX"
+        elif major_class == "Computer":
+            minor_class = MINOR_CLASSES[major_class].get(bit_stream[-8:-2], "XXXX")
+        elif major_class == "Phone":
+            minor_class = MINOR_CLASSES[major_class].get(bit_stream[-8:-2], "XXXX")
+        elif major_class == "LAN/Network Access Point":
+            minor_class = MINOR_CLASSES[major_class].get(bit_stream[-8:-5], "XXXX")
+        elif major_class == "Audio/Video":
+            minor_class = MINOR_CLASSES[major_class].get(bit_stream[-8:-2], "XXXX")
+        elif major_class == "Peripheral":
+            minor_class = MINOR_CLASSES[major_class].get(bit_stream[-8:-6], "XXXX")
+        elif major_class == "Imaging":
+            minor_class = MINOR_CLASSES[major_class].get(bit_stream[-8:-4], "XXXX")
+        elif major_class == "Wearable":
+            minor_class = MINOR_CLASSES[major_class].get(bit_stream[-8:-2], "XXXX")
+        elif major_class == "Toy":
+            minor_class = MINOR_CLASSES[major_class].get(bit_stream[-8:-2], "XXXX")
+        elif major_class == "Health":
+            minor_class = MINOR_CLASSES[major_class].get(bit_stream[-8:-2], "XXXX")
+
+        # parse services logic, appending each available service
+        serv = ""
+        if services != "XXXX":
+            # run from 13 to 23 excluding (14, 15)
+            for x in serv_numbers:
+                # if bit at position -x is 1, append service
+                if bool(int(bit_stream[-x])):
+                    serv += f"{SERVICES[str(x)]}|"
+            services = serv
+
+        EXTRA_INFO_DICT[i] = {
+            "major_device": major_class,
+            "minor_device": minor_class,
+            "services": services,            
+        }
 
 def rssi_to_colour_str(rssi):
+    """
+    returns colorcoded rssi value based on range
+    """
     color = None
     if -30 < rssi < 0:
         color = term.green
@@ -99,7 +183,7 @@ def write_inquiry_mode(sock, mode):
     if status != 0: return -1
     return 0
 
-def device_inquiry_with_with_rssi(sock, show_name=False):
+def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False):
     # save current filter
     old_filter = sock.getsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, 14)
 
@@ -117,14 +201,17 @@ def device_inquiry_with_with_rssi(sock, show_name=False):
     cmd_pkt = struct.pack("BBBBB", 0x33, 0x8b, 0x9e, duration, max_responses)
     # TODO Optimize code for performance
     # update the global device name dictionary before sending hci cmd(which changes mode)
+    results = []
+    headers =["Name", "MAC Address", "RSSI"]
+    data = []
+    if show_extra_info:
+        headers.extend(["Major Dev Class", "Minor Dev Class", "Services"])
+        populate_info_dict()
     if show_name:
         print("polling for device names...")
         NAME_DICT.update(dict(bluetooth.discover_devices(lookup_names=True)))
     bluez.hci_send_cmd(sock, bluez.OGF_LINK_CTL, bluez.OCF_INQUIRY, cmd_pkt)
 
-    results = []
-    headers =["Name", "MAC Address", "RSSI"]
-    data = []
 
     done = False
     while not done:
@@ -145,6 +232,10 @@ def device_inquiry_with_with_rssi(sock, show_name=False):
                     name = addr
                 results.append( ( addr, rssi, name ) )
                 data.append([name, addr, rssi_to_colour_str(rssi)])
+                if show_extra_info:
+                    extra_info = get_device_extra(addr)
+                    # extend last data list with extra info
+                    data[-1].extend(extra_info)
         elif event == bluez.EVT_INQUIRY_COMPLETE:
             done = True
         elif event == bluez.EVT_CMD_STATUS:
@@ -175,7 +266,7 @@ def device_inquiry_with_with_rssi(sock, show_name=False):
 #         print("No devices found in nearby range")
     return results
 
-def animate(i, xs, val_dict, ax, sock, show_name=False):
+def animate(i, xs, val_dict, ax, sock, show_name=False, show_extra_info=False):
     """
     Instance function to create matplotlib graph
     
@@ -237,6 +328,8 @@ def bluelyze(**kwargs):
     show_header()
     show_graph = kwargs.pop("graph")
     show_name = kwargs.pop("show_name")
+    show_extra_info = kwargs.pop("show_extra_info")
+    
     try:
         sock = bluez.hci_open_dev(DEVICE_ID)
     except:
@@ -274,12 +367,12 @@ def bluelyze(**kwargs):
         
         ax = fig.add_subplot(1, 1, 1)
         xs = []
-        results = device_inquiry_with_with_rssi(sock, show_name=show_name) 
+        results = device_inquiry_with_with_rssi(sock, show_name=show_name, show_extra_info=show_extra_info) 
         # initialize dictionary to store real time values of devices
         val_dict = {key: list() for key,value,name in results}
-        ani = animation.FuncAnimation(fig, animate, fargs=(xs, val_dict, ax, sock, show_name), interval=100)
+        ani = animation.FuncAnimation(fig, animate, fargs=(xs, val_dict, ax, sock, show_name, show_extra_info), interval=100)
         plt.show()    
     else:
         while True:
-            device_inquiry_with_with_rssi(sock, show_name=show_name)
+            device_inquiry_with_with_rssi(sock, show_name=show_name, show_extra_info=show_extra_info)
 
