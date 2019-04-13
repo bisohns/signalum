@@ -12,11 +12,10 @@ import binascii
 
 import bluetooth
 import bluetooth._bluetooth as bluez
-import matplotlib.animation as animation
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
 from tabulate import tabulate
+from .utils import RealTimePlot
 from ._base import show_header, term, \
     MAJOR_CLASSES, MINOR_CLASSES, SERVICES
 
@@ -289,7 +288,7 @@ def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False):
 #         print("No devices found in nearby range")
     return results
 
-def animate(i, xs, val_dict, ax, sock, show_name=False, show_extra_info=False):
+def animate(i, ax, plt, val_dict, xs, sock, show_name=False, show_extra_info=False):
     """
     Instance function to create matplotlib graph
     
@@ -341,10 +340,8 @@ def animate(i, xs, val_dict, ax, sock, show_name=False, show_extra_info=False):
             
     plt.xticks([])
     plt.ylim(-100, 0)
-    # plt.subplots_adjust(bottom=0.30)
     plt.title("Bluetooth Devices RSSI against time")
-    plt.ylabel("RSSI")
-    # plt.hlines(CATEGORY_VALUES, 0, max(xs), linestyle="dashed")
+    plt.ylabel("BT RSSI")
 
 def bluelyze(**kwargs):
     print(term.clear())
@@ -384,17 +381,15 @@ def bluelyze(**kwargs):
         
     if show_graph:
         # create general figure object 
-        fig = plt.figure("Signalum Combined Graphs")
-        # change background style
-        plt.style.use('seaborn')
-        results = device_inquiry_with_with_rssi(sock, show_name, show_extra_info) 
-        
-        ax = fig.add_subplot(1, 1, 1)
         xs = []
+        results = device_inquiry_with_with_rssi(sock, show_name, show_extra_info) 
         # initialize dictionary to store real time values of devices
         val_dict = {key: list() for key,value,name in results}
-        ani = animation.FuncAnimation(fig, animate, fargs=(xs, val_dict, ax, sock, show_name, show_extra_info), interval=100)
-        plt.show()    
+        realtimeplot = RealTimePlot(
+                        func=animate, 
+                        func_args=(val_dict, xs, sock, show_name, show_extra_info),
+                        )
+        realtimeplot.animate()
     else:
         while True:
             device_inquiry_with_with_rssi(sock, show_name, show_extra_info)
