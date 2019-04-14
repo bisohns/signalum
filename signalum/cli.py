@@ -1,4 +1,3 @@
-#! /bin/bash
 import argparse
 from curses import wrapper
 import logging
@@ -16,15 +15,15 @@ def main(args):
         Executes logic from parsed arguments
     """
     logging.debug(args)
-    if args['protocol'] == 'wifi':
+    if args['wifi']:
         wifilyze(show_graph=args["show_graph"])
         # TODO Add wifi integration
-    elif args['protocol'] == 'bluetooth':
+    elif args['bluetooth']:
         bluelyze(
             graph=args["show_graph"], 
             show_name=args["show_name"],
             show_extra_info=args["show_extra_info"])
-    elif args['protocol'] == 'all':
+    elif args['analyze_all']:
         print("Procedure for all protocol not yet implemented, select bluetooth")
        # TODO Add all implementation
     else:
@@ -36,7 +35,7 @@ def cli_usage(name=None):
     """
     return f"""
     {get_logo()}
-    usage: signalyze [-h] [-p PROTOCOL] [-o OUTPUT] ([--show-graph] OR [--show-extra-info]) [--show-name]
+    usage: ---include usage--
     """
 
 def runner():
@@ -44,9 +43,12 @@ def runner():
     runner that handles parsing logic
     """
     parser = argparse.ArgumentParser(description='Signalyze', usage=cli_usage())
-    parser.add_argument('-p','--protocol', help='A protocol to analyze (default: all)', default='all')
-    parser.add_argument('-o', '--output', help='path to store output csv file', default=False)
     graph_or_verbose = parser.add_mutually_exclusive_group()
+    protocol = parser.add_mutually_exclusive_group()
+    protocol.add_argument('-b','--bluetooth', action="store_true", help='Analyze only bluetooth')
+    protocol.add_argument('-w','--wifi', action="store_true", help='Analyze only wifi')
+    protocol.add_argument('--analyze-all', action="store_true", help='Analyze both wifi and bluetooth')
+    parser.add_argument('-o', '--output', help='path to store output csv file', default=False)
     parser.add_argument('--show-name', action="store_true", help='Show Device name and mac address')
     graph_or_verbose.add_argument('--show-graph', action="store_true", help='Show Realtime graph of nearby devices')
     graph_or_verbose.add_argument('--show-extra-info', action="store_true", help='Show extra information like services and device classification')

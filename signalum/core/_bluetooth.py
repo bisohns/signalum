@@ -15,11 +15,12 @@ import bluetooth._bluetooth as bluez
 import numpy as np
 from scipy.interpolate import interp1d
 from tabulate import tabulate
-from .utils import RealTimePlot
+from .utils import RealTimePlot, spin
 from ._base import show_header, term, \
     MAJOR_CLASSES, MINOR_CLASSES, SERVICES
 
 DEVICE_ID = 0
+LOADING_HANDLER = None
 VALUES_PER_FRAME = 50
 CATEGORY_VALUES = [0, -10, -30, -50, -70]
 OUT_OF_RANGE = (-300, -200)
@@ -201,6 +202,7 @@ def write_inquiry_mode(sock, mode):
     return 0
 
 def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False):
+    global LOADING_HANDLER
     # save current filter
     old_filter = sock.getsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, 14)
 
@@ -281,7 +283,9 @@ def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False):
     sock.setsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, old_filter )
     # print all the data at once since blessings clears the screen just before
     if len(results):
-        print(term.clear())
+        # terminate concurrent loading handler
+        if bool(LOADING_HANDLER):
+            LOADING_HANDLER.terminate()
         show_header()
         print(tabulate(data, headers=headers))
 #     if len(results)< 1:
@@ -344,6 +348,7 @@ def animate(i, ax, plt, val_dict, xs, sock, show_name=False, show_extra_info=Fal
     plt.ylabel("BT RSSI")
 
 def bluelyze(**kwargs):
+    global LOADING_HANDLER
     print(term.clear())
     show_header()
     show_graph = kwargs.pop("graph")
@@ -364,7 +369,8 @@ def bluelyze(**kwargs):
         print(e)
         sys.exit(1)
     logging.debug("current inquiry mode is %d" % mode)
-    print("Initializing...")
+    LOADING_HANDLER = spin(before="Initializing...",
+                    after="\nLocating BT Devices")
     
     if mode != 1:
         logging.debug("writing inquiry mode...")
