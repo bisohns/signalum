@@ -44,12 +44,12 @@ def runner():
     """
     parser = argparse.ArgumentParser(description='Signalyze', usage=cli_usage())
     graph_or_verbose = parser.add_mutually_exclusive_group()
+    parser.add_argument('-o', '--output', help='save to an output csv file')
+    parser.add_argument('--show-name', action="store_true", help='Show Device name and mac address')
     protocol = parser.add_mutually_exclusive_group()
     protocol.add_argument('-b','--bluetooth', action="store_true", help='Analyze only bluetooth')
     protocol.add_argument('-w','--wifi', action="store_true", help='Analyze only wifi')
-    protocol.add_argument('--analyze-all', action="store_true", help='Analyze both wifi and bluetooth')
-    parser.add_argument('-o', '--output', help='path to store output csv file', default=False)
-    parser.add_argument('--show-name', action="store_true", help='Show Device name and mac address')
+    protocol.add_argument('-all','--analyze-all', action="store_true", help='Analyze both wifi and bluetooth')
     graph_or_verbose.add_argument('--show-graph', action="store_true", help='Show Realtime graph of nearby devices')
     graph_or_verbose.add_argument('--show-extra-info', action="store_true", help='Show extra information like services and device classification')
 
