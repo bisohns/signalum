@@ -286,10 +286,12 @@ def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False):
         # terminate concurrent loading handler
         if bool(LOADING_HANDLER):
             LOADING_HANDLER.terminate()
+    if len(results)>= 1:
         show_header()
         print(tabulate(data, headers=headers))
-#     if len(results)< 1:
-#         print("No devices found in nearby range")
+    else:
+        show_header()
+        print("No devices found in nearby range")
     return results
 
 def animate(i, ax, plt, val_dict, xs, sock, show_name=False, show_extra_info=False):
