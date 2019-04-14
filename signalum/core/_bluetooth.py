@@ -12,15 +12,15 @@ import binascii
 
 import bluetooth
 import bluetooth._bluetooth as bluez
-import matplotlib.animation as animation
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
 from tabulate import tabulate
+from .utils import RealTimePlot, spin
 from ._base import show_header, term, \
     MAJOR_CLASSES, MINOR_CLASSES, SERVICES
 
 DEVICE_ID = 0
+LOADING_HANDLER = None
 VALUES_PER_FRAME = 50
 CATEGORY_VALUES = [0, -10, -30, -50, -70]
 OUT_OF_RANGE = (-300, -200)
@@ -202,6 +202,8 @@ def write_inquiry_mode(sock, mode):
     return 0
 
 def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False):
+    global LOADING_HANDLER
+    
     # save current filter
     old_filter = sock.getsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, 14)
 
@@ -282,14 +284,18 @@ def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False):
     sock.setsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, old_filter )
     # print all the data at once since blessings clears the screen just before
     if len(results):
-        print(term.clear())
+        # terminate concurrent loading handler
+        if bool(LOADING_HANDLER):
+            LOADING_HANDLER.terminate()
+    if len(results)>= 1:
         show_header()
         print(tabulate(data, headers=headers))
-#     if len(results)< 1:
-#         print("No devices found in nearby range")
+    else:
+        show_header()
+        print("No devices found in nearby range")
     return results
 
-def animate(i, xs, val_dict, ax, sock, show_name=False, show_extra_info=False):
+def animate(i, ax, plt, val_dict, xs, sock, show_name=False, show_extra_info=False):
     """
     Instance function to create matplotlib graph
     
@@ -341,12 +347,11 @@ def animate(i, xs, val_dict, ax, sock, show_name=False, show_extra_info=False):
             
     plt.xticks([])
     plt.ylim(-100, 0)
-    # plt.subplots_adjust(bottom=0.30)
     plt.title("Bluetooth Devices RSSI against time")
-    plt.ylabel("RSSI")
-    # plt.hlines(CATEGORY_VALUES, 0, max(xs), linestyle="dashed")
+    plt.ylabel("BT RSSI")
 
 def bluelyze(**kwargs):
+    global LOADING_HANDLER
     print(term.clear())
     show_header()
     show_graph = kwargs.pop("graph")
@@ -367,7 +372,8 @@ def bluelyze(**kwargs):
         print(e)
         sys.exit(1)
     logging.debug("current inquiry mode is %d" % mode)
-    print("Initializing...")
+    LOADING_HANDLER = spin(before="Initializing...",
+                    after="\nLocating BT Devices")
     
     if mode != 1:
         logging.debug("writing inquiry mode...")
@@ -384,17 +390,16 @@ def bluelyze(**kwargs):
         
     if show_graph:
         # create general figure object 
-        fig = plt.figure("Signalum Combined Graphs")
-        # change background style
-        plt.style.use('seaborn')
-        results = device_inquiry_with_with_rssi(sock, show_name, show_extra_info) 
-        
-        ax = fig.add_subplot(1, 1, 1)
         xs = []
+        results = device_inquiry_with_with_rssi(sock, show_name, show_extra_info) 
         # initialize dictionary to store real time values of devices
         val_dict = {key: list() for key,value,name in results}
-        ani = animation.FuncAnimation(fig, animate, fargs=(xs, val_dict, ax, sock, show_name, show_extra_info), interval=100)
-        plt.show()    
+        realtimeplot = RealTimePlot(
+                        func=animate, 
+                        func_args=(val_dict, xs, sock, show_name, show_extra_info),
+                        )
+        realtimeplot.animate()
+
     else:
         while True:
             device_inquiry_with_with_rssi(sock, show_name, show_extra_info)

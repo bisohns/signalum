@@ -170,7 +170,6 @@ def wifilyze(**kwargs):
     while True:
         _signals = scan()
         show_header()
-        print(_signals[-1].signal)
         print(tabulate(_signals, headers=headers))
 
 
