@@ -283,16 +283,17 @@ def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False):
     # restore old filter
     sock.setsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, old_filter )
     # print all the data at once since blessings clears the screen just before
-    if len(results):
+    if len(results)>= 1:
         # terminate concurrent loading handler
         if bool(LOADING_HANDLER):
             LOADING_HANDLER.terminate()
-    if len(results)>= 1:
         show_header()
         print(tabulate(data, headers=headers))
     else:
-        show_header()
-        print("No devices found in nearby range")
+        # LOADING_HANDLER = spin(before="Searching",
+        #                    after="\nNo devices found in nearby range")
+        LOADING_HANDLER.terminate()
+        LOADING_HANDLER = spin(before="No devices in nearby range")
     return results
 
 def animate(i, ax, plt, val_dict, xs, sock, show_name=False, show_extra_info=False):
@@ -372,8 +373,7 @@ def bluelyze(**kwargs):
         print(e)
         sys.exit(1)
     logging.debug("current inquiry mode is %d" % mode)
-    LOADING_HANDLER = spin(before="Initializing...",
-                    after="\nLocating BT Devices")
+    LOADING_HANDLER = spin(before="Initializing...")
     
     if mode != 1:
         logging.debug("writing inquiry mode...")
