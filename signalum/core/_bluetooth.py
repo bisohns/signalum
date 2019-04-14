@@ -203,6 +203,7 @@ def write_inquiry_mode(sock, mode):
 
 def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False):
     global LOADING_HANDLER
+    
     # save current filter
     old_filter = sock.getsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, 14)
 
@@ -398,6 +399,7 @@ def bluelyze(**kwargs):
                         func_args=(val_dict, xs, sock, show_name, show_extra_info),
                         )
         realtimeplot.animate()
+
     else:
         while True:
             device_inquiry_with_with_rssi(sock, show_name, show_extra_info)
