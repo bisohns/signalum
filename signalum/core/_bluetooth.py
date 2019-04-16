@@ -15,7 +15,7 @@ import bluetooth._bluetooth as bluez
 import numpy as np
 from scipy.interpolate import interp1d
 from tabulate import tabulate
-from .utils import RealTimePlot, spin
+from .utils import RealTimePlot, spin, rssi_to_colour_str
 from ._base import show_header, term, \
     MAJOR_CLASSES, MINOR_CLASSES, SERVICES
 
@@ -127,22 +127,6 @@ def populate_info_dict():
             "minor_device": minor_class,
             "services": services,            
         }
-
-def rssi_to_colour_str(rssi):
-    """
-    returns colorcoded rssi value based on range
-    """
-    color = None
-    if -30 < rssi < 0:
-        color = term.green
-    elif -50 < rssi < -30:
-        color = term.yellow
-    elif -70 < rssi < -90:
-        color = term.magenta
-    else:
-        color = term.red
-    return f"{color}{rssi}{term.normal}"
-
 
 
 def read_inquiry_mode(sock):

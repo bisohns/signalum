@@ -8,7 +8,7 @@ import datetime as dt
 import numpy as np
 from scipy.interpolate import interp1d
 from ._exceptions import InterfaceError
-from .utils import db2dbm, RealTimePlot, spin
+from .utils import db2dbm, RealTimePlot, spin, rssi_to_colour_str
 from ._base import show_header, term
 
 
@@ -53,15 +53,22 @@ class Cell:
         self.noise = None
         self.show_extra_info = show_extra_info
 
+    @property
+    def colour_coded_rssi(self):
+        """
+        returns the colour coded rssi value
+        """
+        return rssi_to_colour_str(self.signal)
+    
     def __repr__(self):
         return 'Cell(ssid={ssid})'.format(**vars(self))
 
     def __getitem__(self, index):
         if self.show_extra_info:
-            ls = [self.ssid, self.address, self.signal, self.frequency, self.quality, self.encryption_type, \
+            ls = [self.ssid, self.address, self.colour_coded_rssi, self.frequency, self.quality, self.encryption_type, \
                     self.mode, self.channel]
         else:
-            ls = [self.ssid, self.address, self.signal]
+            ls = [self.ssid, self.address, self.colour_coded_rssi]
         return ls[index]
 
 
