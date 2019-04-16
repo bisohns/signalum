@@ -32,7 +32,7 @@ def display(data, tab_name):
     """
     if bool(data[0]):
         print(f"TABLE: {tab_name}")
-        print(tabulate(data[0], headers=data[1]))
+        print(tabulate(data[0], headers=data[1], colalign="right", tablefmt="rst"))
         print("\n\n")
         return None
     else:

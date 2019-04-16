@@ -46,16 +46,16 @@ Signalum comes with a cli tool called `signalyze`
                 ▄  █                        ▄▀
                  ▀▀                        ▀▀
                  ▀▀                        ▀▀
-usage: signalyze [-h] [-o OUTPUT] [--show-name] [-b | -w | -all] [--show-graph] [--show-extra-info]
-                                                                           │optional arguments:
-                                                                           │  -h, --help            show this help message and exit                  
-                                                                           │  -o OUTPUT, --output OUTPUT  save to an output csv file                       
-                                                                           │  --show-name           Show Device name and mac address                 
-                                                                           │  -b, --bluetooth       Analyze only bluetooth                           
-                                                                           │  -w, --wifi            Analyze only wifi                                
-                                                                           │  -all, --analyze-all   Analyze both wifi and bluetooth                  
-                                                                           │  --show-graph          Show Realtime graph of nearby devices            
-                                                                           │  --show-extra-info     Show extra information like services and device  classification   
+usage: signalyze [-h] [-o OUTPUT] [--show-name] [-b | -w | -all] [--show-graph | --show-extra-info]
+optional arguments:
+    -h, --help            show this help message and exit                  
+    -o OUTPUT, --output OUTPUT  save to an output csv file                       
+    --show-name           Show Device name and mac address                 
+    -b, --bluetooth       Analyze only bluetooth                           
+    -w, --wifi            Analyze only wifi                                
+    -all, --analyze-all   Analyze both wifi and bluetooth  
+    --show-graph          Show Realtime graph of nearby devices
+    --show-extra-info     Show extra information like services and device  classification   
 ```
 
 
