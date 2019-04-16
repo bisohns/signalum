@@ -185,7 +185,7 @@ def write_inquiry_mode(sock, mode):
     if status != 0: return -1
     return 0
 
-def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False):
+def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False, ret_table=False):
     global LOADING_HANDLER
     
     # save current filter
@@ -266,19 +266,23 @@ def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False):
 
     # restore old filter
     sock.setsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, old_filter )
-    # print all the data at once since blessings clears the screen just before
-    if len(results)>= 1:
-        # terminate concurrent loading handler
-        if bool(LOADING_HANDLER):
-            LOADING_HANDLER.terminate()
-        show_header("BLUETOOTH")
-        print(tabulate(data, headers=headers))
+    # if ordered to return a table by analyze_all, ignore other sequence
+    if ret_table:
+        return(tabulate(data, headers=headers))
     else:
-        # LOADING_HANDLER = spin(before="Searching",
-        #                    after="\nNo devices found in nearby range")
-        LOADING_HANDLER.terminate()
-        LOADING_HANDLER = spin(before="No devices in nearby range")
-    return results
+        # print all the data at once since blessings clears the screen just before
+        if len(results)>= 1:
+            # terminate concurrent loading handler
+            if bool(LOADING_HANDLER):
+                LOADING_HANDLER.terminate()
+            show_header("BLUETOOTH")
+            print(tabulate(data, headers=headers))
+        else:
+            # LOADING_HANDLER = spin(before="Searching",
+            #                    after="\nNo devices found in nearby range")
+            LOADING_HANDLER.terminate()
+            LOADING_HANDLER = spin(before="No BT devices in nearby range")
+        return results
 
 def animate(i, ax, plt, val_dict, xs, sock, show_name=False, show_extra_info=False):
     """
@@ -338,11 +342,10 @@ def animate(i, ax, plt, val_dict, xs, sock, show_name=False, show_extra_info=Fal
 
 def bluelyze(**kwargs):
     global LOADING_HANDLER
-    print(term.clear())
-    show_header("BLUETOOTH")
     show_graph = kwargs.pop("graph")
     show_name = kwargs.pop("show_name")
     show_extra_info = kwargs.pop("show_extra_info")
+    analyze_all = kwargs.pop("analyze_all")
     
     try:
         sock = bluez.hci_open_dev(DEVICE_ID)
@@ -358,7 +361,6 @@ def bluelyze(**kwargs):
         print(e)
         sys.exit(1)
     logging.debug("current inquiry mode is %d" % mode)
-    LOADING_HANDLER = spin(before="Initializing...")
     
     if mode != 1:
         logging.debug("writing inquiry mode...")
@@ -372,20 +374,26 @@ def bluelyze(**kwargs):
             print("error while setting inquiry mode")
         logging.debug("result: %d" % result)
 
-        
-    if show_graph:
-        # create general figure object 
-        xs = []
-        results = device_inquiry_with_with_rssi(sock, show_name, show_extra_info) 
-        # initialize dictionary to store real time values of devices
-        val_dict = {key: list() for key,value,name in results}
-        realtimeplot = RealTimePlot(
-                        func=animate, 
-                        func_args=(val_dict, xs, sock, show_name, show_extra_info),
-                        )
-        realtimeplot.animate()
-
-    else:
-        while True:
-            device_inquiry_with_with_rssi(sock, show_name, show_extra_info)
-
+    if analyze_all:
+        return device_inquiry_with_with_rssi(sock, show_name, show_extra_info, ret_table=True)
+    else: 
+        print(term.clear())
+        show_header("BLUETOOTH")
+        LOADING_HANDLER = spin(before="Initializing...")
+            
+        if show_graph:
+            # create general figure object 
+            xs = []
+            results = device_inquiry_with_with_rssi(sock, show_name, show_extra_info) 
+            # initialize dictionary to store real time values of devices
+            val_dict = {key: list() for key,value,name in results}
+            realtimeplot = RealTimePlot(
+                            func=animate, 
+                            func_args=(val_dict, xs, sock, show_name, show_extra_info),
+                            )
+            realtimeplot.animate()
+    
+        else:
+            while True:
+                device_inquiry_with_with_rssi(sock, show_name, show_extra_info)
+    

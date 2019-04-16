@@ -258,32 +258,37 @@ def wifilyze(**kwargs):
     
     _show_graph = kwargs.pop("graph")
     _show_extra_info = kwargs.pop("show_extra_info")
-
+    _analyze_all = kwargs.pop("analyze_all")
+    
     headers =["Name", "MAC Address", "RSSI"]
-    LOADING_HANDLER = spin(
-                        before="Initializing ",
-                        after="\nScanning for Devices"
-                        )
     if _show_extra_info:
         headers.extend(["Frequency", "Quality", "Encryption Type", "Mode", "Channel"])
-    if _show_graph:
+    if _analyze_all:
+        # return tabulated lists of wifi devices if analyze all
         _signals = scan(_show_extra_info)
-        show_header("WIFI") 
-        print(tabulate(_signals, headers=headers))
-        print("\n\n") 
-        x = []
-        val_dict = {i.address: list() for i in scan(_show_extra_info)}
-        realtimehandler = RealTimePlot(
-                                func=animate, 
-                                func_args=(x, val_dict, _show_extra_info, headers)
-                                )
-        realtimehandler.animate()
+        return (tabulate(_signals, headers=headers))
     else:
-        while True:
+        LOADING_HANDLER = spin(
+                            before="Initializing ",
+                            after="\nScanning for Wifi Devices")
+        if _show_graph:
             _signals = scan(_show_extra_info)
-            if not bool(_signals):
-                LOADING_HANDLER = spin(before="No Devices found ")
-            else:
-                show_header("WIFI")
-                print(tabulate(_signals, headers=headers))
-                print("\n\n")
+            show_header("WIFI") 
+            print(tabulate(_signals, headers=headers))
+            print("\n\n") 
+            x = []
+            val_dict = {i.address: list() for i in scan(_show_extra_info)}
+            realtimehandler = RealTimePlot(
+                                    func=animate, 
+                                    func_args=(x, val_dict, _show_extra_info, headers)
+                                    )
+            realtimehandler.animate()
+        else:
+            while True:
+                _signals = scan(_show_extra_info)
+                if not bool(_signals):
+                    LOADING_HANDLER = spin(before="No Devices found ")
+                else:
+                    show_header("WIFI")
+                    print(tabulate(_signals, headers=headers))
+                    print("\n\n")
