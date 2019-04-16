@@ -262,7 +262,7 @@ def wifilyze(**kwargs):
     
     headers =["Name", "MAC Address", "RSSI"]
     if _show_extra_info:
-        headers.extend(["Frequency", "Quality", "Encryption Type", "Mode", "Channel"])
+        headers.extend(["Frequency", "Quality", "Encryption Type", "Mode of Device", "Channel"])
     if _analyze_all:
         # return _signals and headers of wifi tables if analyze all
         _signals = scan(_show_extra_info)
