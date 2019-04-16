@@ -49,8 +49,8 @@ def allyze(**kwargs):
     BT_LOADING = None
     WF_LOADING = None
     while True:
-        bluetooth_devices = bluelyze(**kwargs)
         wifi_devices = wifilyze(**kwargs)
+        bluetooth_devices = bluelyze(**kwargs)
         spin_terminator((BT_LOADING, WF_LOADING, LOADING))
         show_header()
         print("Showing BT and WIFI Devices\n\n")
