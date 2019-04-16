@@ -268,7 +268,9 @@ def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False, 
     sock.setsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, old_filter )
     # if ordered to return a table by analyze_all, ignore other sequence
     if ret_table:
-        return(tabulate(data, headers=headers))
+        if len(results) < 1:
+            return ( (None, headers ))
+        return( (data, headers) )
     else:
         # print all the data at once since blessings clears the screen just before
         if len(results)>= 1:

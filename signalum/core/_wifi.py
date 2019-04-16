@@ -264,9 +264,9 @@ def wifilyze(**kwargs):
     if _show_extra_info:
         headers.extend(["Frequency", "Quality", "Encryption Type", "Mode", "Channel"])
     if _analyze_all:
-        # return tabulated lists of wifi devices if analyze all
+        # return _signals and headers of wifi tables if analyze all
         _signals = scan(_show_extra_info)
-        return (tabulate(_signals, headers=headers))
+        return ( (_signals, headers) )
     else:
         LOADING_HANDLER = spin(
                             before="Initializing ",
