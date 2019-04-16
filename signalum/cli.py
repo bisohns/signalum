@@ -36,7 +36,7 @@ def cli_usage(name=None):
     """
     return f"""
     {get_logo()}
-    usage: ---include usage--
+    usage: signalyze [-h] [-o OUTPUT] [--show-name] [-b | -w | -all] [--show-graph | --show-extra-info] 
     """
 
 def runner():
