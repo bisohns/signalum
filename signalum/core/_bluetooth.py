@@ -271,7 +271,7 @@ def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False):
         # terminate concurrent loading handler
         if bool(LOADING_HANDLER):
             LOADING_HANDLER.terminate()
-        show_header()
+        show_header("BLUETOOTH")
         print(tabulate(data, headers=headers))
     else:
         # LOADING_HANDLER = spin(before="Searching",
@@ -339,7 +339,7 @@ def animate(i, ax, plt, val_dict, xs, sock, show_name=False, show_extra_info=Fal
 def bluelyze(**kwargs):
     global LOADING_HANDLER
     print(term.clear())
-    show_header()
+    show_header("BLUETOOTH")
     show_graph = kwargs.pop("graph")
     show_name = kwargs.pop("show_name")
     show_extra_info = kwargs.pop("show_extra_info")

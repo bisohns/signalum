@@ -198,8 +198,9 @@ def animate(i, ax, plt, xs, val_dict, _show_extra_info, headers):
     
     xs.append(float(dt.datetime.now().strftime("%H.%M%S")))
     _signals = scan(_show_extra_info)
-    show_header() 
+    show_header("WIFI") 
     print(tabulate(_signals, headers=headers))
+    print("\n\n")
     for i in _signals:
         # check for dict key if it exists and append
         try:
@@ -267,8 +268,9 @@ def wifilyze(**kwargs):
         headers.extend(["Frequency", "Quality", "Encryption Type", "Mode", "Channel"])
     if _show_graph:
         _signals = scan(_show_extra_info)
-        show_header() 
+        show_header("WIFI") 
         print(tabulate(_signals, headers=headers))
+        print("\n\n") 
         x = []
         val_dict = {i.address: list() for i in scan(_show_extra_info)}
         realtimehandler = RealTimePlot(
@@ -282,6 +284,6 @@ def wifilyze(**kwargs):
             if not bool(_signals):
                 LOADING_HANDLER = spin(before="No Devices found ")
             else:
-                show_header()
+                show_header("WIFI")
                 print(tabulate(_signals, headers=headers))
-
+                print("\n\n")

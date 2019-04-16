@@ -2,20 +2,37 @@ from blessed import Terminal
 
 term = Terminal()
 # This was generated using toilet
-def show_header():
+def show_header(sub_header=None):
     print(term.clear())
-    print("""
-  ▄▄▄▄    ▄                         ▀▀█           ▄▄▄▄▄▄       
- █▀   ▀   █     ▄▄▄▄  ▄ ▄▄    ▄▄▄     █    ▄   ▄      █▀  ▄▄▄  
- ▀█▄▄▄    █    █▀ ▀█  █▀  █  ▀   █    █    ▀▄ ▄▀    ▄█   █▀  █ 
-     ▀█   ▀    █   █  █   █  ▄▀▀▀█    █     █▄█    ▄▀    █▀▀▀▀ 
- ▀▄▄▄█▀   █    ▀█▄▀█  █   █  ▀▄▄▀█    ▀▄▄   ▀█    ██▄▄▄▄ ▀█▄▄▀ 
-                ▄  █                        ▄▀                 
-                 ▀▀                        ▀▀                  
-                 ▀▀                        ▀▀
-    Copyrights 2019 BisonCorps\n
-    https://github.com/bisoncorps/signalum\n\n
-    """)
+    if sub_header:
+        print(f"""
+      ▄▄▄▄    ▄                         ▀▀█           ▄▄▄▄▄▄       
+     █▀   ▀   █     ▄▄▄▄  ▄ ▄▄    ▄▄▄     █    ▄   ▄      █▀  ▄▄▄  
+     ▀█▄▄▄    █    █▀ ▀█  █▀  █  ▀   █    █    ▀▄ ▄▀    ▄█   █▀  █ 
+         ▀█   ▀    █   █  █   █  ▄▀▀▀█    █     █▄█    ▄▀    █▀▀▀▀ 
+     ▀▄▄▄█▀   █    ▀█▄▀█  █   █  ▀▄▄▀█    ▀▄▄   ▀█    ██▄▄▄▄ ▀█▄▄▀ 
+                    ▄  █                        ▄▀                 
+                     ▀▀                        ▀▀                  
+                     ▀▀                        ▀▀
+        Copyrights 2019 BisonCorps\n
+        https://github.com/bisoncorps/signalum\n\n
+    
+        TABLE: {sub_header}
+        """)
+    else:
+        print(f"""
+              ▄▄▄▄    ▄                         ▀▀█           ▄▄▄▄▄▄       
+             █▀   ▀   █     ▄▄▄▄  ▄ ▄▄    ▄▄▄     █    ▄   ▄      █▀  ▄▄▄  
+             ▀█▄▄▄    █    █▀ ▀█  █▀  █  ▀   █    █    ▀▄ ▄▀    ▄█   █▀  █ 
+                 ▀█   ▀    █   █  █   █  ▄▀▀▀█    █     █▄█    ▄▀    █▀▀▀▀ 
+             ▀▄▄▄█▀   █    ▀█▄▀█  █   █  ▀▄▄▀█    ▀▄▄   ▀█    ██▄▄▄▄ ▀█▄▄▀ 
+                            ▄  █                        ▄▀                 
+                             ▀▀                        ▀▀                  
+                             ▀▀                        ▀▀
+                Copyrights 2019 BisonCorps\n
+                https://github.com/bisoncorps/signalum\n\n
+                """)
+                
 
 def get_logo():
     return ("""
