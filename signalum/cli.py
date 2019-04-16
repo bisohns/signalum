@@ -5,9 +5,9 @@ import sys
 import pprint
 
 try:
-    from .core import bluelyze, term, get_logo, wifilyze
+    from .core import bluelyze, term, get_logo, wifilyze, allyze
 except:
-    from core import bluelyze, term, get_logo, wifilyze
+    from core import bluelyze, term, get_logo, wifilyze, allyze
 
 
 def main(args):
@@ -17,15 +17,23 @@ def main(args):
     logging.debug(args)
     if args['wifi']:
         wifilyze(show_extra_info=args["show_extra_info"],
-                 graph=args["show_graph"])
+                 graph=args["show_graph"],
+                 analyze_all=False)
         # TODO Add wifi integration
     elif args['bluetooth']:
         bluelyze(
             graph=args["show_graph"], 
             show_name=args["show_name"],
-            show_extra_info=args["show_extra_info"])
+            show_extra_info=args["show_extra_info"],
+            analyze_all=False)
     elif args['analyze_all']:
         print("Procedure for all protocol not yet implemented, select bluetooth")
+        allyze(
+            graph=args["show_graph"], 
+            show_name=args["show_name"],
+            show_extra_info=args["show_extra_info"],
+            analyze_all=True
+        )
        # TODO Add all implementation
     else:
         sys.exit('Protocol does not exist. It can only be one of bluetooth or wifi')
@@ -36,7 +44,7 @@ def cli_usage(name=None):
     """
     return f"""
     {get_logo()}
-    usage: ---include usage--
+    usage: signalyze [-h] [-o OUTPUT] [--show-name] [-b | -w | -all] [--show-graph | --show-extra-info] 
     """
 
 def runner():

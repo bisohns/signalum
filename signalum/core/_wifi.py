@@ -8,7 +8,7 @@ import datetime as dt
 import numpy as np
 from scipy.interpolate import interp1d
 from ._exceptions import InterfaceError
-from .utils import db2dbm, RealTimePlot, spin
+from .utils import db2dbm, RealTimePlot, spin, rssi_to_colour_str
 from ._base import show_header, term
 
 
@@ -53,15 +53,22 @@ class Cell:
         self.noise = None
         self.show_extra_info = show_extra_info
 
+    @property
+    def colour_coded_rssi(self):
+        """
+        returns the colour coded rssi value
+        """
+        return rssi_to_colour_str(self.signal)
+    
     def __repr__(self):
         return 'Cell(ssid={ssid})'.format(**vars(self))
 
     def __getitem__(self, index):
         if self.show_extra_info:
-            ls = [self.ssid, self.address, self.signal, self.frequency, self.quality, self.encryption_type, \
+            ls = [self.ssid, self.address, self.colour_coded_rssi, self.frequency, self.quality, self.encryption_type, \
                     self.mode, self.channel]
         else:
-            ls = [self.ssid, self.address, self.signal]
+            ls = [self.ssid, self.address, self.colour_coded_rssi]
         return ls[index]
 
 
@@ -191,8 +198,9 @@ def animate(i, ax, plt, xs, val_dict, _show_extra_info, headers):
     
     xs.append(float(dt.datetime.now().strftime("%H.%M%S")))
     _signals = scan(_show_extra_info)
-    show_header() 
+    show_header("WIFI") 
     print(tabulate(_signals, headers=headers))
+    print("\n\n")
     for i in _signals:
         # check for dict key if it exists and append
         try:
@@ -250,31 +258,37 @@ def wifilyze(**kwargs):
     
     _show_graph = kwargs.pop("graph")
     _show_extra_info = kwargs.pop("show_extra_info")
-
+    _analyze_all = kwargs.pop("analyze_all")
+    
     headers =["Name", "MAC Address", "RSSI"]
-    LOADING_HANDLER = spin(
-                        before="Initializing ",
-                        after="\nScanning for Devices"
-                        )
     if _show_extra_info:
         headers.extend(["Frequency", "Quality", "Encryption Type", "Mode", "Channel"])
-    if _show_graph:
+    if _analyze_all:
+        # return _signals and headers of wifi tables if analyze all
         _signals = scan(_show_extra_info)
-        show_header() 
-        print(tabulate(_signals, headers=headers))
-        x = []
-        val_dict = {i.address: list() for i in scan(_show_extra_info)}
-        realtimehandler = RealTimePlot(
-                                func=animate, 
-                                func_args=(x, val_dict, _show_extra_info, headers)
-                                )
-        realtimehandler.animate()
+        return ( (_signals, headers) )
     else:
-        while True:
+        LOADING_HANDLER = spin(
+                            before="Initializing ",
+                            after="\nScanning for Wifi Devices")
+        if _show_graph:
             _signals = scan(_show_extra_info)
-            if not bool(_signals):
-                LOADING_HANDLER = spin(before="No Devices found ")
-            else:
-                show_header()
-                print(tabulate(_signals, headers=headers))
-
+            show_header("WIFI") 
+            print(tabulate(_signals, headers=headers))
+            print("\n\n") 
+            x = []
+            val_dict = {i.address: list() for i in scan(_show_extra_info)}
+            realtimehandler = RealTimePlot(
+                                    func=animate, 
+                                    func_args=(x, val_dict, _show_extra_info, headers)
+                                    )
+            realtimehandler.animate()
+        else:
+            while True:
+                _signals = scan(_show_extra_info)
+                if not bool(_signals):
+                    LOADING_HANDLER = spin(before="No Devices found ")
+                else:
+                    show_header("WIFI")
+                    print(tabulate(_signals, headers=headers))
+                    print("\n\n")

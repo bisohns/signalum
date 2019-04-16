@@ -5,6 +5,23 @@ import time
 import multiprocessing
 from ._base import term, show_header
 
+def rssi_to_colour_str(rssi):
+    """
+    returns colorcoded rssi value based on range
+    """
+    color = None
+    if -30 < rssi < 0:
+        color = term.green
+    elif -50 < rssi < -30:
+        color = term.yellow
+    elif -70 < rssi < -90:
+        color = term.magenta
+    else:
+        color = term.red
+    return f"{color}{rssi}{term.normal}"
+
+
+
 def spinner_func(**kwargs):
     """
     Spinner function for rudimentary spinner
