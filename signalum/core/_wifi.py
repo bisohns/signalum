@@ -58,7 +58,8 @@ class Cell:
 
     def __getitem__(self, index):
         if self.show_extra_info:
-            ls = [self.ssid, self.address, self.signal, self.frequency, self.quality, self.encryption_type]
+            ls = [self.ssid, self.address, self.signal, self.frequency, self.quality, self.encryption_type, \
+                    self.mode, self.channel]
         else:
             ls = [self.ssid, self.address, self.signal]
         return ls[index]
@@ -256,7 +257,7 @@ def wifilyze(**kwargs):
                         after="\nScanning for Devices"
                         )
     if _show_extra_info:
-        headers.extend(["Frequency", "Quality", "Encryption Type"])
+        headers.extend(["Frequency", "Quality", "Encryption Type", "Mode", "Channel"])
     if _show_graph:
         _signals = scan(_show_extra_info)
         show_header() 
@@ -271,6 +272,9 @@ def wifilyze(**kwargs):
     else:
         while True:
             _signals = scan(_show_extra_info)
-            show_header()
-            print(tabulate(_signals, headers=headers))
+            if not bool(_signals):
+                LOADING_HANDLER = spin(before="No Devices found ")
+            else:
+                show_header()
+                print(tabulate(_signals, headers=headers))
 
