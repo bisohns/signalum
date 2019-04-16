@@ -2,11 +2,20 @@ import subprocess
 import re
 from tabulate import tabulate
 import textwrap
+import warnings
+import datetime as dt
 
+import numpy as np
+from scipy.interpolate import interp1d
 from ._exceptions import InterfaceError
-from .utils import db2dbm
+from .utils import db2dbm, RealTimePlot, spin
 from ._base import show_header, term
 
+
+OUT_OF_RANGE = (-300, -200)
+VALUES_PER_FRAME = 50
+LOADING_HANDLER = None
+NAME_DICT = dict()
 
 cells_re = re.compile(r'Cell \d+ - ')
 quality_re_dict = {
@@ -30,7 +39,7 @@ class Cell:
     Presents a Python interface to the output of iwlist.
     """
 
-    def __init__(self):
+    def __init__(self, show_extra_info=False):
         self.ssid = None
         self.bitrates = []
         self.address = None
@@ -42,20 +51,27 @@ class Cell:
         self.quality = None
         self.signal = None
         self.noise = None
+        self.show_extra_info = show_extra_info
 
     def __repr__(self):
         return 'Cell(ssid={ssid})'.format(**vars(self))
 
     def __getitem__(self, index):
-        ls = [self.ssid, self.address, self.signal]
+        if self.show_extra_info:
+            ls = [self.ssid, self.address, self.signal, self.frequency, self.quality, self.encryption_type, \
+                    self.mode, self.channel]
+        else:
+            ls = [self.ssid, self.address, self.signal]
         return ls[index]
 
 
 
-def scan():
+def scan(show_extra_info=False):
     """
     Returns a list of all cells extracted from the output of iwlist.
     """
+    global LOADING_HANDLER, NAME_DICT
+
     try:
         iwlist_scan = subprocess.check_output(['iwlist', 'scan'],
                                               stderr=subprocess.STDOUT)
@@ -63,9 +79,14 @@ def scan():
         raise InterfaceError(e.output.strip())
     else:
         iwlist_scan = iwlist_scan.decode('utf-8')
-    _normalize = lambda cell_string: normalize(cell_string)
+    _normalize = lambda cell_string: normalize(cell_string, show_extra_info)
     cells = [_normalize(i) for i in cells_re.split(iwlist_scan)[1:]]
 
+    # terminate loader
+    if LOADING_HANDLER:
+        LOADING_HANDLER.terminate()
+    # update NAME_DICT
+    NAME_DICT.update({i.address: i.ssid for i in cells})
     return cells
 
 
@@ -91,11 +112,11 @@ def split_on_colon(string):
     return key, value
 
 
-def normalize(cell_block):
+def normalize(cell_block, show_extra_info=False):
     # The cell blocks come in with every line except the first indented at
     # least 20 spaces.  This removes the first 20 spaces off of those lines.
     lines = textwrap.dedent(' ' * 20 + cell_block).splitlines()
-    cell = Cell()
+    cell = Cell(show_extra_info)
 
     while lines:
         line = lines.pop(0)
@@ -162,16 +183,98 @@ def normalize(cell_block):
 
     return cell
 
+def animate(i, ax, plt, xs, val_dict, _show_extra_info, headers):
+    """
+    animate a real time graph plot of RSSI against time
+    """
+    global NAME_DICT
+    
+    xs.append(float(dt.datetime.now().strftime("%H.%M%S")))
+    _signals = scan(_show_extra_info)
+    show_header() 
+    print(tabulate(_signals, headers=headers))
+    for i in _signals:
+        # check for dict key if it exists and append
+        try:
+            #if signal is not None
+            if i.signal:
+                val_dict[i.address].append(i.signal)
+            else:
+                val_dict[i].append([np.random.random_integers(*OUT_OF_RANGE)])
+        except: 
+            # create new list with prior values out of range
+            val_dict[i.address]= list()
+            val_dict[i.address].extend([np.random.random_integers(*OUT_OF_RANGE) \
+                 for i in range(len(xs))])
+    ax.clear()
+    # limit both axis to VALUES_PER_FRAME values at a time maximum
+    xs = xs[-VALUES_PER_FRAME:]
+    for i in val_dict:
+        device_name = NAME_DICT[i]
+        val_dict[i] = val_dict[i][-VALUES_PER_FRAME:]
+        # if device has dissapeared, append OUT_OF_RANGE to make up length
+        if len(val_dict[i]) < len(xs):
+            val_dict[i].extend([np.random.random_integers(*OUT_OF_RANGE) \
+                 for i in range(len(xs) - len(val_dict[i]))])
+        # if y axis detects twice
+        if len(xs) < len(val_dict[i]):
+            val_dict[i] = val_dict[i][-len(xs):]
+        # smoothen out x axis before display
+        x = np.array(xs)
+        y = np.array(val_dict[i])
+        x_new = np.linspace(x.min(), x.max(), 500)
+        # check if points are enough to interpolate on and use box(nearest) interpolation
+        # to display levels to this
+        if len(x) > 2:
+            f = interp1d(x, y, kind='nearest')
+            y_smooth = f(x_new)
+            # plot smooth plot with scatter point plots
+            ax.plot(x_new, y_smooth, label=device_name)
+        else:
+            ax.plot(xs, y, label=device_name)
+        #ax.scatter(xs, y)
+    # display legend, attempt to supress warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ax.legend()
+            
+    plt.xticks([])
+    plt.ylim(-100, 0)
+    plt.title("Wifi Devices RSSI against time")
+    plt.ylabel("Wifi RSSI")
+    plt.xlabel("Time")
+
 def wifilyze(**kwargs):
     """ Display wifi analyzed details"""
-    _show_graph = kwargs.pop("show_graph")
+    global LOADING_HANDLER
+    
+    _show_graph = kwargs.pop("graph")
+    _show_extra_info = kwargs.pop("show_extra_info")
 
     headers =["Name", "MAC Address", "RSSI"]
-    while True:
-        _signals = scan()
-        show_header()
+    LOADING_HANDLER = spin(
+                        before="Initializing ",
+                        after="\nScanning for Devices"
+                        )
+    if _show_extra_info:
+        headers.extend(["Frequency", "Quality", "Encryption Type", "Mode", "Channel"])
+    if _show_graph:
+        _signals = scan(_show_extra_info)
+        show_header() 
         print(tabulate(_signals, headers=headers))
-
-
-
+        x = []
+        val_dict = {i.address: list() for i in scan(_show_extra_info)}
+        realtimehandler = RealTimePlot(
+                                func=animate, 
+                                func_args=(x, val_dict, _show_extra_info, headers)
+                                )
+        realtimehandler.animate()
+    else:
+        while True:
+            _signals = scan(_show_extra_info)
+            if not bool(_signals):
+                LOADING_HANDLER = spin(before="No Devices found ")
+            else:
+                show_header()
+                print(tabulate(_signals, headers=headers))
 

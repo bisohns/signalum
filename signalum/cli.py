@@ -16,7 +16,8 @@ def main(args):
     """
     logging.debug(args)
     if args['wifi']:
-        wifilyze(show_graph=args["show_graph"])
+        wifilyze(show_extra_info=args["show_extra_info"],
+                 graph=args["show_graph"])
         # TODO Add wifi integration
     elif args['bluetooth']:
         bluelyze(

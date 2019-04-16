@@ -350,6 +350,7 @@ def animate(i, ax, plt, val_dict, xs, sock, show_name=False, show_extra_info=Fal
     plt.ylim(-100, 0)
     plt.title("Bluetooth Devices RSSI against time")
     plt.ylabel("BT RSSI")
+    plt.xlabel("Time")
 
 def bluelyze(**kwargs):
     global LOADING_HANDLER
