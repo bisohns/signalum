@@ -34,6 +34,8 @@ def display(data, tab_name):
         print(f"TABLE: {tab_name}")
         print(tabulate(data[0], headers=data[1]))
         print("\n\n")
+        for i in data[0]:
+            print(data[0][i])
         return None
     else:
         print(f"No {tab_name} Device in range.. \n\n")
