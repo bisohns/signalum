@@ -2,7 +2,6 @@
 # discovered device
 
 import datetime as dt
-import os
 import struct
 import sys
 import time
@@ -18,6 +17,7 @@ from tabulate import tabulate
 from .utils import RealTimePlot, spin, rssi_to_colour_str
 from ._base import show_header, term, \
     MAJOR_CLASSES, MINOR_CLASSES, SERVICES
+from ._exceptions import AdapterUnaccessibleError
 
 DEVICE_ID = 0
 LOADING_HANDLER = None
@@ -358,9 +358,9 @@ def bluelyze(**kwargs):
     try:
         mode = read_inquiry_mode(sock)
     except Exception as e:
-        print("error reading inquiry mode.  ")
-        print("Are you sure this a bluetooth 1.2 device?")
-        print(e)
+        logging.debug("error reading inquiry mode.  ")
+        raise AdapterUnaccessibleError("Are you sure this a bluetooth 1.2 device? \nTurn On Your Bluetooth")
+        logging.debug(e)
         sys.exit(1)
     logging.debug("current inquiry mode is %d" % mode)
     
