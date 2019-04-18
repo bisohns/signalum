@@ -3,6 +3,7 @@ from .utils import db2dbm, RealTimePlot, spin, rssi_to_colour_str
 from ._base import show_header, term
 from ._bluetooth import bluelyze
 from ._wifi import wifilyze
+from ._exceptions import AdapterUnaccessibleError 
 
 
 
@@ -45,14 +46,21 @@ def allyze(**kwargs):
     analyze all devices
     """
     LOADING = spin(before="Initializing.. ",
-                    after="\nlocating BT and WIFI devices")
+                   after="\nlocating BT and WIFI devices")
     BT_LOADING = None
     WF_LOADING = None
     while True:
-        wifi_devices = wifilyze(**kwargs)
-        bluetooth_devices = bluelyze(**kwargs)
-        spin_terminator((BT_LOADING, WF_LOADING, LOADING))
-        show_header()
-        print("Showing BT and WIFI Devices\n\n")
-        BT_LOADING = display(bluetooth_devices, "BT")
-        WF_LOADING = display(wifi_devices, "WIFI")    
+        try:
+            wifi_devices = wifilyze(**kwargs)
+            bluetooth_devices = bluelyze(**kwargs)
+            spin_terminator((BT_LOADING, WF_LOADING, LOADING))
+            show_header()
+            print("Showing BT and WIFI Devices\n\n")
+            BT_LOADING = display(bluetooth_devices, "BT")
+            WF_LOADING = display(wifi_devices, "WIFI")    
+        except AdapterUnaccessibleError as e:
+            LOADING.terminate()
+            spin_terminator((BT_LOADING, WF_LOADING, LOADING))
+            show_header()
+            print(e)
+            break

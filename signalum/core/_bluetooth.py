@@ -144,9 +144,11 @@ def read_inquiry_mode(sock):
     bluez.hci_filter_set_opcode(flt, opcode)
     sock.setsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, flt )
 
-    # first read the current inquiry mode.
-    bluez.hci_send_cmd(sock, bluez.OGF_HOST_CTL, 
-            bluez.OCF_READ_INQUIRY_MODE )
+    try:
+        # first read the current inquiry mode.
+        bluez.hci_send_cmd(sock, bluez.OGF_HOST_CTL, bluez.OCF_READ_INQUIRY_MODE )
+    except bluez.error as e:
+        raise AdapterUnaccessibleError("Are you sure this a bluetooth 1.2 device? \nTurn On Your Bluetooth")
 
     pkt = sock.recv(255)
 
@@ -354,48 +356,52 @@ def bluelyze(**kwargs):
     except:
         print("error accessing bluetooth device...")
         sys.exit(1)
-    
     try:
+    
         mode = read_inquiry_mode(sock)
-    except Exception as e:
-        logging.debug("error reading inquiry mode.  ")
-        raise AdapterUnaccessibleError("Are you sure this a bluetooth 1.2 device? \nTurn On Your Bluetooth")
-        logging.debug(e)
-        sys.exit(1)
-    logging.debug("current inquiry mode is %d" % mode)
-    
-    if mode != 1:
-        logging.debug("writing inquiry mode...")
-        try:
-            result = write_inquiry_mode(sock, 1)
-        except Exception as e:
-            print("error writing inquiry mode.  Are you sure you're root?")
-            print(e)
-            sys.exit(1)
-        if result != 0:
-            print("error while setting inquiry mode")
-        logging.debug("result: %d" % result)
+        logging.debug("current inquiry mode is %d" % mode)
+        
+        if mode != 1:
+            logging.debug("writing inquiry mode...")
+            try:
+                result = write_inquiry_mode(sock, 1)
+            except Exception as e:
+                print("error writing inquiry mode.  Are you sure you're root?")
+                print(e)
+                sys.exit(1)
+            if result != 0:
+                print("error while setting inquiry mode")
+            logging.debug("result: %d" % result)
 
-    if analyze_all:
-        return device_inquiry_with_with_rssi(sock, show_name, show_extra_info, ret_table=True)
-    else: 
-        print(term.clear())
-        show_header("BLUETOOTH")
-        LOADING_HANDLER = spin(before="Initializing...")
-            
-        if show_graph:
-            # create general figure object 
-            xs = []
-            results = device_inquiry_with_with_rssi(sock, show_name, show_extra_info) 
-            # initialize dictionary to store real time values of devices
-            val_dict = {key: list() for key,value,name in results}
-            realtimeplot = RealTimePlot(
-                            func=animate, 
-                            func_args=(val_dict, xs, sock, show_name, show_extra_info),
-                            )
-            realtimeplot.animate()
-    
+        if analyze_all:
+            return device_inquiry_with_with_rssi(sock, show_name, show_extra_info, ret_table=True)
+        else: 
+            print(term.clear())
+            show_header("BLUETOOTH")
+            LOADING_HANDLER = spin(before="Initializing...")
+                
+            if show_graph:
+                # create general figure object 
+                xs = []
+                results = device_inquiry_with_with_rssi(sock, show_name, show_extra_info) 
+                # initialize dictionary to store real time values of devices
+                val_dict = {key: list() for key,value,name in results}
+                realtimeplot = RealTimePlot(
+                                func=animate, 
+                                func_args=(val_dict, xs, sock, show_name, show_extra_info),
+                                )
+                realtimeplot.animate()
+        
+            else:
+                while True:
+                    device_inquiry_with_with_rssi(sock, show_name, show_extra_info)
+        
+    except (Exception, bluez.error) as e:
+        if analyze_all:
+            raise(e)
         else:
-            while True:
-                device_inquiry_with_with_rssi(sock, show_name, show_extra_info)
-    
+            logging.debug("error reading inquiry mode.  ")
+            show_header("BLUETOOTH")
+            print("Are you sure this a bluetooth 1.2 device? \nTurn On Your Bluetooth")
+            logging.debug(e)
+            sys.exit(1)

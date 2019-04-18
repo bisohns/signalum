@@ -1,3 +1,4 @@
+import sys
 import subprocess
 import re
 from tabulate import tabulate
@@ -7,7 +8,7 @@ import datetime as dt
 
 import numpy as np
 from scipy.interpolate import interp1d
-from ._exceptions import InterfaceError
+from ._exceptions import InterfaceError, AdapterUnaccessibleError
 from .utils import db2dbm, RealTimePlot, spin, rssi_to_colour_str
 from ._base import show_header, term
 
@@ -24,6 +25,7 @@ quality_re_dict = {
         'absolute': re.compile(r'Quality[=:](?P<quality>\d+).*Signal level[=:](?P<siglevel>\d+)')
         }
 frequency_re = re.compile(r'^(?P<frequency>[\d\.]+ .Hz)(?:[\s\(]+Channel\s+(?P<channel>\d+)[\s\)]+)?$')
+network_down_re = re.compile(r'.*Network is down*.')
 
 
 identity = lambda x: x
@@ -88,6 +90,12 @@ def scan(show_extra_info=False):
         iwlist_scan = iwlist_scan.decode('utf-8')
     _normalize = lambda cell_string: normalize(cell_string, show_extra_info)
     cells = [_normalize(i) for i in cells_re.split(iwlist_scan)[1:]]
+
+    if not len(cells):
+        _no_card = network_down_re.search(iwlist_scan)
+        if _no_card is not None:
+            raise AdapterUnaccessibleError("Cannot access Network Adapter, is your Wifi off?")
+        
 
     # terminate loader
     if LOADING_HANDLER:
@@ -268,27 +276,33 @@ def wifilyze(**kwargs):
         _signals = scan(_show_extra_info)
         return ( (_signals, headers) )
     else:
-        LOADING_HANDLER = spin(
-                            before="Initializing ",
-                            after="\nScanning for Wifi Devices")
-        if _show_graph:
-            _signals = scan(_show_extra_info)
-            show_header("WIFI") 
-            print(tabulate(_signals, headers=headers))
-            print("\n\n") 
-            x = []
-            val_dict = {i.address: list() for i in scan(_show_extra_info)}
-            realtimehandler = RealTimePlot(
-                                    func=animate, 
-                                    func_args=(x, val_dict, _show_extra_info, headers)
-                                    )
-            realtimehandler.animate()
-        else:
-            while True:
+        try:
+            LOADING_HANDLER = spin(
+                                before="Initializing ",
+                                after="\nScanning for Wifi Devices")
+            if _show_graph:
                 _signals = scan(_show_extra_info)
-                if not bool(_signals):
-                    LOADING_HANDLER = spin(before="No Devices found ")
-                else:
-                    show_header("WIFI")
-                    print(tabulate(_signals, headers=headers))
-                    print("\n\n")
+                show_header("WIFI") 
+                print(tabulate(_signals, headers=headers))
+                print("\n\n") 
+                x = []
+                val_dict = {i.address: list() for i in scan(_show_extra_info)}
+                realtimehandler = RealTimePlot(
+                                        func=animate, 
+                                        func_args=(x, val_dict, _show_extra_info, headers)
+                                        )
+                realtimehandler.animate()
+            else:
+                while True:
+                        _signals = scan(_show_extra_info)
+                        if not bool(_signals):
+                            LOADING_HANDLER = spin(before="No Devices found ")
+                        else:
+                            show_header("WIFI")
+                            print(tabulate(_signals, headers=headers))
+                            print("\n\n")
+        except AdapterUnaccessibleError as e:
+            LOADING_HANDLER.terminate()
+            show_header("WIFI")
+            print(e)
+            sys.exit(1)
