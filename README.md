@@ -26,7 +26,7 @@ A Linux Package to detect and analyze existing connections from wifi and bluetoo
 
     sudo apt-get install bluetooth libbluetooth-dev
 
-    pip install requirements.txt
+    pip install -r requirements.txt
 
 ```
 
@@ -35,7 +35,7 @@ A Linux Package to detect and analyze existing connections from wifi and bluetoo
 ## Usage
 
 Signalum comes with a cli tool called `signalyze`
-![Screenshot](_screenshot.png)
+![Demo](output.gif)
 
 ```bash
   ▄▄▄▄    ▄                         ▀▀█           ▄▄▄▄▄▄
