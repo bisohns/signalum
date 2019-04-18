@@ -354,10 +354,11 @@ def bluelyze(**kwargs):
     try:
         sock = bluez.hci_open_dev(DEVICE_ID)
     except:
-        print("error accessing bluetooth device...")
+        print("Error accessing bluetooth device...\n"
+              "Confirm if your bluetooth device is correctly installed and try again")
         sys.exit(1)
+
     try:
-    
         mode = read_inquiry_mode(sock)
         logging.debug("current inquiry mode is %d" % mode)
         
