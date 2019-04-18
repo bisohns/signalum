@@ -9,6 +9,7 @@ def rssi_to_colour_str(rssi):
     """
     returns colorcoded rssi value based on range
     """
+    rssi = int(rssi)
     color = None
     if -30 <= rssi < 0:
         color = term.green

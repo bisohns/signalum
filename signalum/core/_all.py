@@ -33,8 +33,7 @@ def display(data, tab_name):
     """
     if bool(data[0]):
         print(f"TABLE: {tab_name}")
-        print(tabulate(data[0], headers=data[1], colalign="right", tablefmt="rst"))
-        print("\n\n")
+        print(tabulate(data[0], headers=data[1], disable_numparse=True), "\n\n")
         return None
     else:
         print(f"No {tab_name} Device in range.. \n\n")
@@ -44,6 +43,9 @@ def display(data, tab_name):
 def allyze(**kwargs):
     """
     analyze all devices
+    
+    .. todo:
+        Add Graph implementations for this functionality
     """
     LOADING = spin(before="Initializing.. ",
                    after="\nlocating BT and WIFI devices")
@@ -59,6 +61,8 @@ def allyze(**kwargs):
             BT_LOADING = display(bluetooth_devices, "BT")
             WF_LOADING = display(wifi_devices, "WIFI")    
         except AdapterUnaccessibleError as e:
+            # Wifi and Bluetooth might be running of different threads, so we want to kill those
+            # Processes so that the terminal can be blocked
             LOADING.terminate()
             spin_terminator((BT_LOADING, WF_LOADING, LOADING))
             show_header()

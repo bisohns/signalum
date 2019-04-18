@@ -67,8 +67,8 @@ class Cell:
 
     def __getitem__(self, index):
         if self.show_extra_info:
-            ls = [self.ssid, self.address, self.colour_coded_rssi, self.frequency, self.quality, self.encryption_type, \
-                    self.mode, self.channel]
+            ls = [self.ssid, self.address, self.colour_coded_rssi, self.frequency, self.quality, \
+                    self.encryption_type, self.mode, self.channel]
         else:
             ls = [self.ssid, self.address, self.colour_coded_rssi]
         return ls[index]
@@ -91,11 +91,11 @@ def scan(show_extra_info=False):
     _normalize = lambda cell_string: normalize(cell_string, show_extra_info)
     cells = [_normalize(i) for i in cells_re.split(iwlist_scan)[1:]]
 
+    # If there are no wifi signals confirm, if it's because the wifi is not enabled
     if not len(cells):
         _no_card = network_down_re.search(iwlist_scan)
         if _no_card is not None:
             raise AdapterUnaccessibleError("Cannot access Network Adapter, is your Wifi off?")
-        
 
     # terminate loader
     if LOADING_HANDLER:
@@ -269,6 +269,7 @@ def wifilyze(**kwargs):
     _analyze_all = kwargs.pop("analyze_all")
     
     headers =["Name", "MAC Address", "RSSI"]
+    #FIXME Tabulate function skewers to the left from frequency column
     if _show_extra_info:
         headers.extend(["Frequency", "Quality", "Encryption Type", "Mode of Device", "Channel"])
     if _analyze_all:
@@ -283,7 +284,7 @@ def wifilyze(**kwargs):
             if _show_graph:
                 _signals = scan(_show_extra_info)
                 show_header("WIFI") 
-                print(tabulate(_signals, headers=headers))
+                print(tabulate(_signals, headers=headers, disable_numparse=True))
                 print("\n\n") 
                 x = []
                 val_dict = {i.address: list() for i in scan(_show_extra_info)}
@@ -299,7 +300,7 @@ def wifilyze(**kwargs):
                             LOADING_HANDLER = spin(before="No Devices found ")
                         else:
                             show_header("WIFI")
-                            print(tabulate(_signals, headers=headers))
+                            print(tabulate(_signals, headers=headers, disable_numparse=True))
                             print("\n\n")
         except AdapterUnaccessibleError as e:
             LOADING_HANDLER.terminate()
