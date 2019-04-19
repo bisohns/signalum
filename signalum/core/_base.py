@@ -4,8 +4,7 @@ term = Terminal()
 # This was generated using toilet
 def show_header(sub_header=None):
     print(term.clear())
-    if sub_header:
-        print(f"""
+    header = """
       ▄▄▄▄    ▄                         ▀▀█           ▄▄▄▄▄▄       
      █▀   ▀   █     ▄▄▄▄  ▄ ▄▄    ▄▄▄     █    ▄   ▄      █▀  ▄▄▄  
      ▀█▄▄▄    █    █▀ ▀█  █▀  █  ▀   █    █    ▀▄ ▄▀    ▄█   █▀  █ 
@@ -16,22 +15,14 @@ def show_header(sub_header=None):
                      ▀▀                        ▀▀
         Copyrights 2019 BisonCorps\n
         https://github.com/bisoncorps/signalum\n\n
+        """
     
+    if sub_header:
+        header += f"""
+
         TABLE: {sub_header}
-        """)
-    else:
-        print(f"""
-              ▄▄▄▄    ▄                         ▀▀█           ▄▄▄▄▄▄       
-             █▀   ▀   █     ▄▄▄▄  ▄ ▄▄    ▄▄▄     █    ▄   ▄      █▀  ▄▄▄  
-             ▀█▄▄▄    █    █▀ ▀█  █▀  █  ▀   █    █    ▀▄ ▄▀    ▄█   █▀  █ 
-                 ▀█   ▀    █   █  █   █  ▄▀▀▀█    █     █▄█    ▄▀    █▀▀▀▀ 
-             ▀▄▄▄█▀   █    ▀█▄▀█  █   █  ▀▄▄▀█    ▀▄▄   ▀█    ██▄▄▄▄ ▀█▄▄▀ 
-                            ▄  █                        ▄▀                 
-                             ▀▀                        ▀▀                  
-                             ▀▀                        ▀▀
-                Copyrights 2019 BisonCorps\n
-                https://github.com/bisoncorps/signalum\n\n
-                """)
+        """
+    print(header)
                 
 
 def get_logo():

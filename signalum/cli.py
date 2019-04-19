@@ -19,7 +19,6 @@ def main(args):
         wifilyze(show_extra_info=args["show_extra_info"],
                  graph=args["show_graph"],
                  analyze_all=False)
-        # TODO Add wifi integration
     elif args['bluetooth']:
         bluelyze(
             graph=args["show_graph"], 
@@ -27,14 +26,12 @@ def main(args):
             show_extra_info=args["show_extra_info"],
             analyze_all=False)
     elif args['analyze_all']:
-        print("Procedure for all protocol not yet implemented, select bluetooth")
         allyze(
             graph=args["show_graph"], 
             show_name=args["show_name"],
             show_extra_info=args["show_extra_info"],
             analyze_all=True
         )
-       # TODO Add all implementation
     else:
         sys.exit('Protocol does not exist. It can only be one of bluetooth or wifi')
 
