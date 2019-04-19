@@ -398,7 +398,8 @@ def bluelyze(**kwargs):
                     device_inquiry_with_with_rssi(sock, show_name, show_extra_info)
         
     except (Exception, bluez.error) as e:
-        LOADING_HANDLER.terminate()
+        if LOADING_HANDLER:
+            LOADING_HANDLER.terminate()
         # Analyze implements its own error handler
         if analyze_all:
             raise(e)
