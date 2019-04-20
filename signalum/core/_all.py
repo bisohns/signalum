@@ -33,7 +33,7 @@ def display(data, tab_name):
     """
     if bool(data[0]):
         print(f"TABLE: {tab_name}")
-        print(tabulate(data[0], headers=data[1], disable_numparse=True), "\n\n")
+        print(tabulate(data[0], headers=data[1], disable_numparse=True ,tablefmt="rst"), "\n\n")
         return None
     else:
         print(f"No {tab_name} Device in range.. \n\n")
