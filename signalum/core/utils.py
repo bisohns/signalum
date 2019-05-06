@@ -9,17 +9,21 @@ def rssi_to_colour_str(rssi):
     """
     returns colorcoded rssi value based on range
     """
-    rssi = int(rssi)
-    color = None
-    if -30 <= rssi < 0:
-        color = term.green
-    elif -50 <= rssi < -30:
-        color = term.yellow
-    elif -70 <= rssi < -90:
-        color = term.magenta
+    try:
+        rssi = int(rssi)
+    except TypeError:
+        return
     else:
-        color = term.red
-    return f"{color}{rssi}{term.normal}"
+        color = None
+        if -30 <= rssi < 0:
+            color = term.green
+        elif -50 <= rssi < -30:
+            color = term.yellow
+        elif -70 <= rssi < -90:
+            color = term.magenta
+        else:
+            color = term.red
+        return f"{color}{rssi}{term.normal}"
 
 
 
