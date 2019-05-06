@@ -25,6 +25,7 @@ quality_re_dict = {
         'absolute': re.compile(r'Quality[=:](?P<quality>\d+).*Signal level[=:](?P<siglevel>\d+)')
         }
 frequency_re = re.compile(r'^(?P<frequency>[\d\.]+ .Hz)(?:[\s\(]+Channel\s+(?P<channel>\d+)[\s\)]+)?$')
+# Checks if wifi is off
 network_down_re = re.compile(r'.*Network is down*.')
 
 
@@ -183,6 +184,9 @@ def normalize(cell_block, show_extra_info=False):
                     cell.encryption_type = 'wpa2'
                 elif 'WPA' in value:
                     cell.encryption_type = 'wpa'
+                else:
+                    cell.encryption_type = 'null'
+
             if key == 'frequency':
                 matches = frequency_re.search(value)
                 cell.frequency = matches.group('frequency')
@@ -269,7 +273,6 @@ def wifilyze(**kwargs):
     _analyze_all = kwargs.pop("analyze_all")
     
     headers =["Name", "MAC Address", "RSSI"]
-    #FIXME Tabulate function skewers to the left from frequency column
     if _show_extra_info:
         headers.extend(["Frequency", "Quality", "Encryption Type", "Mode of Device", "Channel"])
     if _analyze_all:
