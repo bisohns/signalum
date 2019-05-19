@@ -2,27 +2,26 @@ language: python
 python:
   - "3.6"
 
-# Branches to enbale CI.
-branches:
-  only:
-    - master
 
 before_install:
   - sudo apt-get install bluetooth libbluetooth-dev
+
 # Build script (If successfully built - no errors)
 script:
   - pip install -r requirements.txt
+
 after_success:
   - python setup.py --version
 
 deploy:
-  if: fork = false AND branch = master
   provider: pypi
   user: "deven96"
   password: $PYPI_PASSWORD
-  all_branches: true
-  condition: $TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+
+  condition: ($TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+) AND (fork = false)
   skip_existing: true
+  on:
+    branch: master
+
 after_deploy:
   - pip install signalum
   - python -c "import signalum"
