@@ -16,8 +16,10 @@ deploy:
   provider: pypi
   user: "deven96"
   password: $PYPI_PASSWORD
-  condition: branch = master AND fork = false
   skip_existing: true
+  condition: fork = false
+  on:
+    branch: master
 
 after_deploy:
   - pip install signalum
