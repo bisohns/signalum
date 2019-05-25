@@ -42,7 +42,7 @@ class Cell:
     Presents a Python interface to the output of iwlist.
     """
 
-    def __init__(self, show_extra_info=False):
+    def __init__(self, show_extra_info=False ,color=True):
         self.ssid = None
         self.bitrates = []
         self.address = None
@@ -55,6 +55,7 @@ class Cell:
         self.signal = None
         self.noise = None
         self.show_extra_info = show_extra_info
+        self.color = color
 
     @property
     def colour_coded_rssi(self):
@@ -67,16 +68,20 @@ class Cell:
         return 'Cell(ssid={ssid})'.format(**vars(self))
 
     def __getitem__(self, index):
+        if self.color:
+            rssi = self.colour_coded_rssi
+        else:
+            rssi = self.signal
         if self.show_extra_info:
-            ls = [self.ssid, self.address, self.colour_coded_rssi, self.frequency, self.quality, \
+            ls = [self.ssid, self.address, rssi, self.frequency, self.quality, \
                     self.encryption_type, self.mode, self.channel]
         else:
-            ls = [self.ssid, self.address, self.colour_coded_rssi]
+            ls = [self.ssid, self.address, rssi]
         return ls[index]
 
 
 
-def scan(show_extra_info=False):
+def scan(color=True, show_extra_info=False):
     """
     Returns a list of all cells extracted from the output of iwlist.
     """
@@ -89,7 +94,7 @@ def scan(show_extra_info=False):
         raise InterfaceError(e.output.strip())
     else:
         iwlist_scan = iwlist_scan.decode('utf-8')
-    _normalize = lambda cell_string: normalize(cell_string, show_extra_info)
+    _normalize = lambda cell_string: normalize(cell_string, color, show_extra_info)
     cells = [_normalize(i) for i in cells_re.split(iwlist_scan)[1:]]
 
     # If there are no wifi signals confirm, if it's because the wifi is not enabled
@@ -128,11 +133,11 @@ def split_on_colon(string):
     return key, value
 
 
-def normalize(cell_block, show_extra_info=False):
+def normalize(cell_block, color, show_extra_info=False):
     # The cell blocks come in with every line except the first indented at
     # least 20 spaces.  This removes the first 20 spaces off of those lines.
     lines = textwrap.dedent(' ' * 20 + cell_block).splitlines()
-    cell = Cell(show_extra_info)
+    cell = Cell(show_extra_info=show_extra_info, color=color)
 
     while lines:
         line = lines.pop(0)
@@ -271,13 +276,14 @@ def wifilyze(**kwargs):
     _show_graph = kwargs.pop("graph")
     _show_extra_info = kwargs.pop("show_extra_info")
     _analyze_all = kwargs.pop("analyze_all")
+    _color = kwargs.get("color", True)
     
     headers =["Name", "MAC Address", "RSSI"]
     if _show_extra_info:
         headers.extend(["Frequency", "Quality", "Encryption Type", "Mode of Device", "Channel"])
     if _analyze_all:
         # return _signals and headers of wifi tables if analyze all
-        _signals = scan(_show_extra_info)
+        _signals = scan(_color, _show_extra_info)
         return ( (_signals, headers) )
     else:
         try:
