@@ -1,3 +1,5 @@
+import datetime as dt
+
 from tabulate import tabulate
 from .utils import db2dbm, RealTimePlot, spin, rssi_to_colour_str                                     
 from ._base import show_header, term
@@ -5,6 +7,18 @@ from ._bluetooth import bluelyze
 from ._wifi import wifilyze
 from ._exceptions import AdapterUnaccessibleError 
 
+
+def animate(i, ax, plt, xs, btvals, wfvals):
+    """
+    animate a real time graph plot of RSSI against time
+    """
+    
+    xs.append(float(dt.datetime.now().strftime("%H.%M%S")))
+    plt.xticks([])
+    plt.ylim(-100, 0)
+    plt.title("Wifi Devices RSSI against time")
+    plt.ylabel("Wifi RSSI")
+    plt.xlabel("Time")
 
 
 def spin_terminator(spinners):
@@ -46,25 +60,31 @@ def allyze(**kwargs):
     
     .. todo:
         Add Graph implementations for this functionality
-    """
+    """ 
     LOADING = spin(before="Initializing.. ",
                    after="\nlocating BT and WIFI devices")
-    BT_LOADING = None
-    WF_LOADING = None
-    while True:
-        try:
-            wifi_devices = wifilyze(**kwargs)
-            bluetooth_devices = bluelyze(**kwargs)
-            spin_terminator((BT_LOADING, WF_LOADING, LOADING))
-            show_header()
-            print("Showing BT and WIFI Devices\n\n")
-            BT_LOADING = display(bluetooth_devices, "BT")
-            WF_LOADING = display(wifi_devices, "WIFI")    
-        except AdapterUnaccessibleError as e:
-            # Wifi and Bluetooth might be running of different threads, so we want to kill those
-            # Processes so that the terminal can be blocked
-            LOADING.terminate()
-            spin_terminator((BT_LOADING, WF_LOADING, LOADING))
-            show_header()
-            print(e)
-            break
+    _show_graph = kwargs.pop("graph")
+    if _show_graph:
+        realtimehandler = RealTimePlot(
+                                func=animate, 
+                                func_args=(x, val_dict, _show_extra_info, headers),
+                                dual_axis=True
+                                )
+        realtimehandler.animate()
+    else:
+        while True:
+            try:
+                wifi_devices = wifilyze(**kwargs)
+                bluetooth_devices = bluelyze(**kwargs)
+                show_header()
+                print("Showing BT and WIFI Devices\n\n")
+                display(bluetooth_devices, "BT")
+                display(wifi_devices, "WIFI")
+            except AdapterUnaccessibleError as e:
+                # Wifi and Bluetooth might be running of different threads, so we want to kill those
+                # Processes so that the terminal can be blocked
+                LOADING.terminate()
+                spin_terminator((LOADING, ))
+                show_header()
+                print(e)
+                break

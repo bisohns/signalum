@@ -7,8 +7,7 @@ before_install:
   - sudo apt-get install bluetooth libbluetooth-dev
 
 # Build script (If successfully built - no errors)
-script:
-  - pip install -r requirements.txt
+script: make
 
 after_success:
   - python setup.py --version
@@ -17,10 +16,8 @@ deploy:
   provider: pypi
   user: "deven96"
   password: $PYPI_PASSWORD
-  condition: ($TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+) AND (fork = false)
+  condition: branch = master AND fork = false
   skip_existing: true
-  on:
-    branch: master
 
 after_deploy:
   - pip install signalum

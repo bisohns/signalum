@@ -3,6 +3,7 @@ from curses import wrapper
 import logging
 import sys
 import pprint
+from _version import __version__, name
 
 try:
     from .core import bluelyze, term, get_logo, wifilyze, allyze
@@ -50,6 +51,8 @@ def runner():
     """
     parser = argparse.ArgumentParser(description='Signalyze', usage=cli_usage())
     graph_or_verbose = parser.add_mutually_exclusive_group()
+    parser.add_argument('--version', action='version',
+                        version='{package} -  {version}'.format(package=name, version=__version__))
     parser.add_argument('-o', '--output', help='save to an output csv file')
     parser.add_argument('--show-name', action="store_true", help='Show Device name and mac address')
     protocol = parser.add_mutually_exclusive_group()
