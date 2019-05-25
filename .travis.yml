@@ -8,7 +8,7 @@ before_install:
 
 # Build script (If successfully built - no errors)
 script:
-  - pip install -r requirements.txt
+  - make install
 
 after_success:
   - python setup.py --version
