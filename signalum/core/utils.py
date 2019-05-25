@@ -79,7 +79,7 @@ class RealTimePlot(object):
     Creates a matplotlib handler for plotting animated graphs
     This graph handler plots values on the y axis against live updated events
     """
-    def __init__(self, func, func_args, plt_style="seaborn", fig=None):
+    def __init__(self, func, func_args, plt_style="seaborn", fig=None, dual_axis=False):
         """
             Args:
                 func: (function) function to be call by animation
@@ -97,8 +97,13 @@ class RealTimePlot(object):
         else:
             self.fig = fig
         # change background style
-        self.plt.style.use(self.plt_style)                
-        self.ax = self.fig.add_subplot(1, 1, 1)        
+        self.plt.style.use(self.plt_style)
+        if not dual_axis:                
+            self.ax = self.fig.add_subplot(1, 1, 1)        
+        else:
+            self.ax = []
+            self.ax.append(self.fig.add_subplot(2, 1, 1))
+            self.ax.append(self.fig.add_subplot(2, 1, 2))
 
     def animate(self, interval=100):
         """
