@@ -187,7 +187,7 @@ def write_inquiry_mode(sock, mode):
     if status != 0: return -1
     return 0
 
-def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False, ret_table=False):
+def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False, color=True, ret_table=False):
     global LOADING_HANDLER
     
     # save current filter
@@ -242,7 +242,10 @@ def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False, 
                 except:
                     name = addr
                 results.append( ( addr, rssi, name ) )
-                data.append([name, addr, rssi_to_colour_str(rssi)])
+                if color:
+                    data.append([name, addr, rssi_to_colour_str(rssi)])
+                else:
+                    data.append([name, addr, rssi])
                 if show_extra_info:
                     extra_info = get_device_extra(addr)
                     # extend last data list with extra info
@@ -350,6 +353,7 @@ def bluelyze(**kwargs):
     show_name = kwargs.pop("show_name")
     show_extra_info = kwargs.pop("show_extra_info")
     analyze_all = kwargs.pop("analyze_all")
+    _color = kwargs.get("color", True)
     
     try:
         sock = bluez.hci_open_dev(DEVICE_ID)
@@ -375,7 +379,7 @@ def bluelyze(**kwargs):
             logging.debug("result: %d" % result)
 
         if analyze_all:
-            return device_inquiry_with_with_rssi(sock, show_name, show_extra_info, ret_table=True)
+            return device_inquiry_with_with_rssi(sock, show_name, show_extra_info, _color, ret_table=True)
         else: 
             print(term.clear())
             show_header("BLUETOOTH")
@@ -384,18 +388,18 @@ def bluelyze(**kwargs):
             if show_graph:
                 # create general figure object 
                 xs = []
-                results = device_inquiry_with_with_rssi(sock, show_name, show_extra_info) 
+                results = device_inquiry_with_with_rssi(sock, show_name, show_extra_info, _color) 
                 # initialize dictionary to store real time values of devices
                 val_dict = {key: list() for key,value,name in results}
                 realtimeplot = RealTimePlot(
                                 func=animate, 
-                                func_args=(val_dict, xs, sock, show_name, show_extra_info),
+                                func_args=(val_dict, xs, sock, show_name, show_extra_info, _color),
                                 )
                 realtimeplot.animate()
         
             else:
                 while True:
-                    device_inquiry_with_with_rssi(sock, show_name, show_extra_info)
+                    device_inquiry_with_with_rssi(sock, show_name, show_extra_info, _color)
         
     except (Exception, bluez.error) as e:
         if LOADING_HANDLER:
