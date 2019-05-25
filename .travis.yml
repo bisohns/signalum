@@ -7,8 +7,7 @@ before_install:
   - sudo apt-get install bluetooth libbluetooth-dev
 
 # Build script (If successfully built - no errors)
-script:
-  - make install
+script: make
 
 after_success:
   - python setup.py --version
