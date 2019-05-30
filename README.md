@@ -1,7 +1,7 @@
 <p align="center">
   <img width="100" height="100" src="signalum.png"><br>
 
-<span> <a href="https://travis-ci.com/bisoncorps/signalum"><img src="https://travis-ci.com/bisoncorps/signalum.svg" alt="Build Status" height="18"> <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" height="18"> <a href="https://badge.fury.io/py/signalum"><img src="https://badge.fury.io/py/signalum.svg" alt="PyPI version" height="18"></a> </span>
+<span> <a href="https://travis-ci.com/bisoncorps/signalum"><img src="https://travis-ci.com/bisoncorps/signalum.svg" alt="Build Status" height="18"> <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" height="18"> <a href="https://badge.fury.io/py/signalum"><img src="https://badge.fury.io/py/Signalum.svg" alt="PyPI version" height="18"></a> </span>
 <p>
 
 
