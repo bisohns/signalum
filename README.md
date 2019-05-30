@@ -1,3 +1,7 @@
+<p align="center">
+  <img width="100" height="100" src="signalum.png">
+</p>
+
 # Signalum
 
 A Linux Package to detect and analyze existing connections from wifi and bluetooth
