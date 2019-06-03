@@ -28,7 +28,6 @@ def main(args):
             analyze_all=False)
     elif args['analyze_all']:
         allyze(
-            graph=args["show_graph"], 
             show_name=args["show_name"],
             show_extra_info=args["show_extra_info"],
             analyze_all=True
