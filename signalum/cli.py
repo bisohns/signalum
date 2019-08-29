@@ -35,14 +35,16 @@ def main(args):
     else:
         sys.exit('Protocol does not exist. It can only be one of bluetooth or wifi')
 
+
 def cli_usage(name=None):
     """
     custom usage message to override `cli.py`
     """
-    return f"""
-    {get_logo()}
+    return """
+    {logo}
     usage: signalyze [-h] [-o OUTPUT] [--show-name] [-b | -w | -all] [--show-graph | --show-extra-info] 
-    """
+    """.format(logo=get_logo())
+
 
 def runner():
     """
@@ -63,6 +65,7 @@ def runner():
 
     args = vars(parser.parse_args())
     main(args)
+
 
 if __name__ == '__main__':
     logging.basicConfig(stream=sys.stderr, level=logging.INFO)
