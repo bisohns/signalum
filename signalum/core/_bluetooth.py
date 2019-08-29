@@ -24,13 +24,15 @@ LOADING_HANDLER = None
 VALUES_PER_FRAME = 50
 CATEGORY_VALUES = [0, -10, -30, -50, -70]
 OUT_OF_RANGE = (-300, -200)
-NAME_DICT =  dict()
+NAME_DICT = dict()
 EXTRA_INFO_DICT = dict()
 CLASS_DICT = dict()
 
+
 def printpacket(pkt):
     for c in pkt:
-        sys.stdout.write("%02x " % struct.unpack("B",c)[0])
+        sys.stdout.write("%02x " % struct.unpack("B", c)[0])
+
 
 def get_device_extra(addr):
     """
@@ -44,11 +46,12 @@ def get_device_extra(addr):
         return [major_device, minor_device, services]
     except:
         EXTRA_INFO_DICT[addr] = {
-                    "major_device": "",
-                    "minor_device": "",
-                    "services": "",
-                }
+            "major_device": "",
+            "minor_device": "",
+            "services": "",
+        }
         return ["XXXX", "XXXX", "XXXX"]
+
 
 def populate_info_dict():
     """
@@ -58,11 +61,11 @@ def populate_info_dict():
     # extract hex value dictionary
     hex_dict = dict()
     for i in CLASS_DICT:
-        hex_dict[i] = "%X" %CLASS_DICT[i]
+        hex_dict[i] = "%X" % CLASS_DICT[i]
     # check against odd length hex values
     for i in hex_dict:
         if len(hex_dict[i]) % 2 != 0:
-            hex_dict[i] = f"0{hex_dict[i]}"
+            hex_dict[i] = "0{}".format(hex_dict[i])
 
     # initialize entries in EXTRA_INFO_DICT using vars
     for i in hex_dict:
@@ -117,81 +120,83 @@ def populate_info_dict():
                 try:
                     # if bit at position -x is 1, append service
                     if bool(int(bit_stream[-x])):
-                        serv += f"{SERVICES[str(x)]}|"
-                except:
+                        serv += "{}|".format(SERVICES[str(x)])
+                except Exception as e:
                     pass
             services = serv
 
         EXTRA_INFO_DICT[i] = {
             "major_device": major_class,
             "minor_device": minor_class,
-            "services": services,            
+            "services": services,
         }
 
 
 def read_inquiry_mode(sock):
     """returns the current mode, or -1 on failure"""
     # save current filter
-    old_filter = sock.getsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, 14)
+    old_filter = sock.getsockopt(bluez.SOL_HCI, bluez.HCI_FILTER, 14)
 
     # Setup socket filter to receive only events related to the
     # read_inquiry_mode command
     flt = bluez.hci_filter_new()
-    opcode = bluez.cmd_opcode_pack(bluez.OGF_HOST_CTL, 
-            bluez.OCF_READ_INQUIRY_MODE)
+    opcode = bluez.cmd_opcode_pack(bluez.OGF_HOST_CTL,
+                                   bluez.OCF_READ_INQUIRY_MODE)
     bluez.hci_filter_set_ptype(flt, bluez.HCI_EVENT_PKT)
-    bluez.hci_filter_set_event(flt, bluez.EVT_CMD_COMPLETE);
+    bluez.hci_filter_set_event(flt, bluez.EVT_CMD_COMPLETE)
     bluez.hci_filter_set_opcode(flt, opcode)
-    sock.setsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, flt )
+    sock.setsockopt(bluez.SOL_HCI, bluez.HCI_FILTER, flt)
 
     try:
         # first read the current inquiry mode.
-        bluez.hci_send_cmd(sock, bluez.OGF_HOST_CTL, bluez.OCF_READ_INQUIRY_MODE )
+        bluez.hci_send_cmd(sock, bluez.OGF_HOST_CTL, bluez.OCF_READ_INQUIRY_MODE)
     except bluez.error as e:
         raise AdapterUnaccessibleError("Are you sure this a bluetooth 1.2 device? \nTurn On Your Bluetooth")
 
     pkt = sock.recv(255)
 
-    status,mode = struct.unpack("xxxxxxBB", pkt)
+    status, mode = struct.unpack("xxxxxxBB", pkt)
     if status != 0: mode = -1
 
     # restore old filter
-    sock.setsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, old_filter )
+    sock.setsockopt(bluez.SOL_HCI, bluez.HCI_FILTER, old_filter)
     return mode
+
 
 def write_inquiry_mode(sock, mode):
     """returns 0 on success, -1 on failure"""
     # save current filter
-    old_filter = sock.getsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, 14)
+    old_filter = sock.getsockopt(bluez.SOL_HCI, bluez.HCI_FILTER, 14)
 
     # Setup socket filter to receive only events related to the
     # write_inquiry_mode command
     flt = bluez.hci_filter_new()
-    opcode = bluez.cmd_opcode_pack(bluez.OGF_HOST_CTL, 
-            bluez.OCF_WRITE_INQUIRY_MODE)
+    opcode = bluez.cmd_opcode_pack(bluez.OGF_HOST_CTL,
+                                   bluez.OCF_WRITE_INQUIRY_MODE)
     bluez.hci_filter_set_ptype(flt, bluez.HCI_EVENT_PKT)
-    bluez.hci_filter_set_event(flt, bluez.EVT_CMD_COMPLETE);
+    bluez.hci_filter_set_event(flt, bluez.EVT_CMD_COMPLETE)
     bluez.hci_filter_set_opcode(flt, opcode)
-    sock.setsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, flt )
+    sock.setsockopt(bluez.SOL_HCI, bluez.HCI_FILTER, flt)
 
     # send the command!
-    bluez.hci_send_cmd(sock, bluez.OGF_HOST_CTL, 
-            bluez.OCF_WRITE_INQUIRY_MODE, struct.pack("B", mode) )
+    bluez.hci_send_cmd(sock, bluez.OGF_HOST_CTL,
+                       bluez.OCF_WRITE_INQUIRY_MODE, struct.pack("B", mode))
 
     pkt = sock.recv(255)
 
     status = struct.unpack("xxxxxxB", pkt)[0]
 
     # restore old filter
-    sock.setsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, old_filter )
+    sock.setsockopt(bluez.SOL_HCI, bluez.HCI_FILTER, old_filter)
     if status != 0: return -1
     return 0
 
+
 def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False, color=True, ret_table=False):
     global LOADING_HANDLER
-    
+
     # save current filter
-    old_filter = sock.getsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, 14)
+    old_filter = sock.getsockopt(bluez.SOL_HCI, bluez.HCI_FILTER, 14)
 
     # perform a device inquiry on bluetooth device #0
     # The inquiry should last 8 * 1.28 = 10.24 seconds
@@ -200,14 +205,14 @@ def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False, 
     flt = bluez.hci_filter_new()
     bluez.hci_filter_all_events(flt)
     bluez.hci_filter_set_ptype(flt, bluez.HCI_EVENT_PKT)
-    sock.setsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, flt )
+    sock.setsockopt(bluez.SOL_HCI, bluez.HCI_FILTER, flt)
 
     duration = 1
     max_responses = 255
     cmd_pkt = struct.pack("BBBBB", 0x33, 0x8b, 0x9e, duration, max_responses)
     # TODO Optimize code for performance
     # update the global device name dictionary before sending hci cmd(which changes mode)
-    headers =["Name", "MAC Address", "RSSI"]
+    headers = ["Name", "MAC Address", "RSSI"]
     data = []
     results = []
     if show_extra_info or show_name:
@@ -221,8 +226,6 @@ def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False, 
             headers.extend(["Major Dev Class", "Minor Dev Class", "Services"])
             populate_info_dict()
     bluez.hci_send_cmd(sock, bluez.OGF_LINK_CTL, bluez.OCF_INQUIRY, cmd_pkt)
-            
-
 
     done = False
     while not done:
@@ -233,15 +236,15 @@ def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False, 
             nrsp = bluetooth.get_byte(pkt[0])
             for i in range(nrsp):
                 # get human readable addr
-                addr = bluez.ba2str( pkt[1+6*i:1+6*i+6] )
+                addr = bluez.ba2str(pkt[1 + 6 * i:1 + 6 * i + 6])
                 rssi = bluetooth.byte_to_signed_int(
-                        bluetooth.get_byte(pkt[1+13*nrsp+i]))
+                    bluetooth.get_byte(pkt[1 + 13 * nrsp + i]))
                 # retrieve device name, or assign address as name
                 try:
                     name = NAME_DICT[addr]
                 except:
                     name = addr
-                results.append( ( addr, rssi, name ) )
+                results.append((addr, rssi, name))
                 if color:
                     data.append([name, addr, rssi_to_colour_str(rssi)])
                 else:
@@ -262,23 +265,23 @@ def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False, 
             pkt = pkt[3:]
             nrsp = bluetooth.get_byte(pkt[0])
             for i in range(nrsp):
-                addr = bluez.ba2str( pkt[1+6*i:1+6*i+6] )
-                results.append( ( addr, -1 , "UNK") )
+                addr = bluez.ba2str(pkt[1 + 6 * i:1 + 6 * i + 6])
+                results.append((addr, -1, "UNK"))
                 print("[%s] (no RRSI)" % addr)
         else:
             logging.debug("unrecognized packet type 0x%02x" % ptype)
         logging.debug("event %s", event)
 
     # restore old filter
-    sock.setsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, old_filter )
+    sock.setsockopt(bluez.SOL_HCI, bluez.HCI_FILTER, old_filter)
     # if ordered to return a table by analyze_all, ignore other sequence
     if ret_table:
         if len(results) < 1:
-            return ( (None, headers ))
-        return( (data, headers) )
+            return ((None, headers))
+        return ((data, headers))
     else:
         # print all the data at once since blessings clears the screen just before
-        if len(results)>= 1:
+        if len(results) >= 1:
             # terminate concurrent loading handler
             if bool(LOADING_HANDLER):
                 LOADING_HANDLER.terminate()
@@ -290,6 +293,7 @@ def device_inquiry_with_with_rssi(sock, show_name=False, show_extra_info=False, 
             LOADING_HANDLER.terminate()
             LOADING_HANDLER = spin(before="No BT devices in nearby range")
         return results
+
 
 def animate(i, ax, plt, val_dict, xs, sock, show_name=False, show_extra_info=False):
     """
@@ -306,11 +310,11 @@ def animate(i, ax, plt, val_dict, xs, sock, show_name=False, show_extra_info=Fal
             # check for dict key if it exists
             affect_list = val_dict[i[0]]
             affect_list.append(i[1])
-        except: 
+        except Exception as e:
             # create new list with prior values out of range
-            val_dict[i[0]]= list()
+            val_dict[i[0]] = list()
             val_dict[i[0]].extend([np.random.random_integers(*OUT_OF_RANGE) \
-                 for i in range(len(xs))])
+                                   for i in range(len(xs))])
 
     ax.clear()
     # limit both axis to VALUES_PER_FRAME values at a time maximum
@@ -321,7 +325,7 @@ def animate(i, ax, plt, val_dict, xs, sock, show_name=False, show_extra_info=Fal
         # if device has dissapeared, append zeros to make up length
         if len(val_dict[i]) < len(xs):
             val_dict[i].extend([np.random.random_integers(*OUT_OF_RANGE) \
-                 for i in range(len(xs) - len(val_dict[i]))])
+                                for i in range(len(xs) - len(val_dict[i]))])
         # smoothen out x axis before display
         x = np.array(xs)
         y = np.array(val_dict[i])
@@ -335,17 +339,18 @@ def animate(i, ax, plt, val_dict, xs, sock, show_name=False, show_extra_info=Fal
             ax.plot(x_new, y_smooth, label=device_name)
         else:
             ax.plot(xs, y, label=device_name)
-        #ax.scatter(xs, y)
+        # ax.scatter(xs, y)
     # display legend, attempt to supress warnings
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         ax.legend()
-            
+
     plt.xticks([])
     plt.ylim(-100, 0)
     plt.title("Bluetooth Devices RSSI against time")
     plt.ylabel("BT RSSI")
     plt.xlabel("Time")
+
 
 def bluelyze(**kwargs):
     global LOADING_HANDLER
@@ -354,7 +359,7 @@ def bluelyze(**kwargs):
     show_extra_info = kwargs.pop("show_extra_info")
     analyze_all = kwargs.pop("analyze_all")
     _color = kwargs.get("color", True)
-    
+
     try:
         sock = bluez.hci_open_dev(DEVICE_ID)
     except:
@@ -365,7 +370,7 @@ def bluelyze(**kwargs):
     try:
         mode = read_inquiry_mode(sock)
         logging.debug("current inquiry mode is %d" % mode)
-        
+
         if mode != 1:
             logging.debug("writing inquiry mode...")
             try:
@@ -380,33 +385,33 @@ def bluelyze(**kwargs):
 
         if analyze_all:
             return device_inquiry_with_with_rssi(sock, show_name, show_extra_info, _color, ret_table=True)
-        else: 
+        else:
             print(term.clear())
             show_header("BLUETOOTH")
             LOADING_HANDLER = spin(before="Initializing...")
-                
+
             if show_graph:
                 # create general figure object 
                 xs = []
-                results = device_inquiry_with_with_rssi(sock, show_name, show_extra_info, _color) 
+                results = device_inquiry_with_with_rssi(sock, show_name, show_extra_info, _color)
                 # initialize dictionary to store real time values of devices
-                val_dict = {key: list() for key,value,name in results}
+                val_dict = {key: list() for key, value, name in results}
                 realtimeplot = RealTimePlot(
-                                func=animate, 
-                                func_args=(val_dict, xs, sock, show_name, show_extra_info, _color),
-                                )
+                    func=animate,
+                    func_args=(val_dict, xs, sock, show_name, show_extra_info, _color),
+                )
                 realtimeplot.animate()
-        
+
             else:
                 while True:
                     device_inquiry_with_with_rssi(sock, show_name, show_extra_info, _color)
-        
+
     except (Exception, bluez.error) as e:
         if LOADING_HANDLER:
             LOADING_HANDLER.terminate()
         # Analyze implements its own error handler
         if analyze_all:
-            raise(e)
+            raise (e)
         else:
             logging.debug("error reading inquiry mode.  ")
             show_header("BLUETOOTH")

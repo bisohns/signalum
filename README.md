@@ -25,9 +25,10 @@ A Linux Package to detect and analyze existing connections from wifi and bluetoo
     git clone git@github.com:bisoncorps/signalum.git
 
     sudo apt-get install bluetooth libbluetooth-dev
+    
+    cd signalum
 
     pip install -r requirements.txt
-
 ```
 
 

@@ -1,11 +1,11 @@
 import datetime as dt
 
 from tabulate import tabulate
-from .utils import db2dbm, RealTimePlot, spin, rssi_to_colour_str                                     
+from .utils import db2dbm, RealTimePlot, spin, rssi_to_colour_str
 from ._base import show_header, term
 from ._bluetooth import bluelyze
 from ._wifi import wifilyze
-from ._exceptions import AdapterUnaccessibleError 
+from ._exceptions import AdapterUnaccessibleError
 
 
 def spin_terminator(spinners):
@@ -18,6 +18,7 @@ def spin_terminator(spinners):
     for i in spinners:
         if i:
             i.terminate()
+
 
 def display(data, tab_name):
     """
@@ -33,13 +34,14 @@ def display(data, tab_name):
             when there are no available devices yet 
     """
     if bool(data[0]):
-        print(f"TABLE: {tab_name}")
-        print(tabulate(data[0], headers=data[1], disable_numparse=True ,tablefmt="rst"), "\n\n")
-        return None
+        print("TABLE: {tab_name}".format(tab_name=tab_name))
+        print(tabulate(data[0], headers=data[1], disable_numparse=True, tablefmt="rst"), "\n\n")
+        return
     else:
-        print(f"No {tab_name} Device in range.. \n\n")
-        return None
-        #return spin(before=f"No {tab_name} Device in range.. \n\n")        
+        print("No {tab_name} Device in range.. \n\n".format(tab_name=tab_name))
+        return
+        # return spin(before=f"No {tab_name} Device in range.. \n\n")
+
 
 def allyze(**kwargs):
     """
@@ -47,9 +49,9 @@ def allyze(**kwargs):
     
     .. todo:
         Add Graph implementations for this functionality
-    """ 
-    LOADING = spin(before="Initializing", 
-                after="\nLocating WF and BT Devices")
+    """
+    LOADING = spin(before="Initializing",
+                   after="\nLocating WF and BT Devices")
     kwargs["graph"] = False
     while True:
         try:
@@ -61,11 +63,11 @@ def allyze(**kwargs):
             print("Showing BT and WIFI Devices\n\n")
             display(bluetooth_devices, "BT")
             display(wifi_devices, "WIFI")
-        except AdapterUnaccessibleError as e:
+        except AdapterUnaccessibleError as aue:
             # Wifi and Bluetooth might be running of different threads, so we want to kill those
             # Processes so that the terminal can be blocked
             LOADING.terminate()
-            spin_terminator((LOADING, ))
+            spin_terminator((LOADING,))
             show_header()
-            print(e)
+            print(aue)
             break

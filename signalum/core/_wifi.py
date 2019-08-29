@@ -12,7 +12,6 @@ from ._exceptions import InterfaceError, AdapterUnaccessibleError
 from .utils import db2dbm, RealTimePlot, spin, rssi_to_colour_str
 from ._base import show_header, term
 
-
 OUT_OF_RANGE = (-300, -200)
 VALUES_PER_FRAME = 50
 LOADING_HANDLER = None
@@ -20,14 +19,14 @@ NAME_DICT = dict()
 
 cells_re = re.compile(r'Cell \d+ - ')
 quality_re_dict = {
-        'dBm': re.compile(r'Quality[=:](?P<quality>\d+/\d+).*Signal level[=:](?P<siglevel>-\d+) dBm?(.*Noise level[=:](?P<noiselevel>-\d+) dBm)?'),
-        'relative': re.compile(r'Quality[=:](?P<quality>\d+/\d+).*Signal level[=:](?P<siglevel>\d+/\d+)'),
-        'absolute': re.compile(r'Quality[=:](?P<quality>\d+).*Signal level[=:](?P<siglevel>\d+)')
-        }
+    'dBm': re.compile(
+        r'Quality[=:](?P<quality>\d+/\d+).*Signal level[=:](?P<siglevel>-\d+) dBm?(.*Noise level[=:](?P<noiselevel>-\d+) dBm)?'),
+    'relative': re.compile(r'Quality[=:](?P<quality>\d+/\d+).*Signal level[=:](?P<siglevel>\d+/\d+)'),
+    'absolute': re.compile(r'Quality[=:](?P<quality>\d+).*Signal level[=:](?P<siglevel>\d+)')
+}
 frequency_re = re.compile(r'^(?P<frequency>[\d\.]+ .Hz)(?:[\s\(]+Channel\s+(?P<channel>\d+)[\s\)]+)?$')
 # Checks if wifi is off
 network_down_re = re.compile(r'.*Network is down*.')
-
 
 identity = lambda x: x
 
@@ -42,7 +41,7 @@ class Cell:
     Presents a Python interface to the output of iwlist.
     """
 
-    def __init__(self, show_extra_info=False ,color=True):
+    def __init__(self, show_extra_info=False, color=True):
         self.ssid = None
         self.bitrates = []
         self.address = None
@@ -63,7 +62,7 @@ class Cell:
         returns the colour coded rssi value
         """
         return rssi_to_colour_str(self.signal)
-    
+
     def __repr__(self):
         return 'Cell(ssid={ssid})'.format(**vars(self))
 
@@ -74,11 +73,10 @@ class Cell:
             rssi = self.signal
         if self.show_extra_info:
             ls = [self.ssid, self.address, rssi, self.frequency, self.quality, \
-                    self.encryption_type, self.mode, self.channel]
+                  self.encryption_type, self.mode, self.channel]
         else:
             ls = [self.ssid, self.address, rssi]
         return ls[index]
-
 
 
 def scan(color=True, show_extra_info=False):
@@ -117,6 +115,7 @@ def normalize_key(key):
     key = key_translations.get(key, key)
 
     return key.replace(' ', '')
+
 
 normalize_value = {
     'ssid': lambda v: v.strip('"'),
@@ -200,37 +199,38 @@ def normalize(cell_block, color, show_extra_info=False):
             elif key in normalize_value:
                 setattr(cell, key, normalize_value[key](value))
 
-    # It seems that encryption types other than WEP need to specify their
+        # It seems that encryption types other than WEP need to specify their
         # existence.
         if cell.encrypted and not cell.encryption_type:
             cell.encryption_type = 'wep'
 
     return cell
 
+
 def animate(i, ax, plt, xs, val_dict, _show_extra_info, headers):
     """
     animate a real time graph plot of RSSI against time
     """
     global NAME_DICT
-    
+
     xs.append(float(dt.datetime.now().strftime("%H.%M%S")))
     _signals = scan(_show_extra_info)
-    show_header("WIFI") 
+    show_header("WIFI")
     print(tabulate(_signals, headers=headers))
     print("\n\n")
     for i in _signals:
         # check for dict key if it exists and append
         try:
-            #if signal is not None
+            # if signal is not None
             if i.signal:
                 val_dict[i.address].append(i.signal)
             else:
                 val_dict[i].append([np.random.random_integers(*OUT_OF_RANGE)])
-        except: 
+        except:
             # create new list with prior values out of range
-            val_dict[i.address]= list()
+            val_dict[i.address] = list()
             val_dict[i.address].extend([np.random.random_integers(*OUT_OF_RANGE) \
-                 for i in range(len(xs))])
+                                        for i in range(len(xs))])
     ax.clear()
     # limit both axis to VALUES_PER_FRAME values at a time maximum
     xs = xs[-VALUES_PER_FRAME:]
@@ -240,7 +240,7 @@ def animate(i, ax, plt, xs, val_dict, _show_extra_info, headers):
         # if device has dissapeared, append OUT_OF_RANGE to make up length
         if len(val_dict[i]) < len(xs):
             val_dict[i].extend([np.random.random_integers(*OUT_OF_RANGE) \
-                 for i in range(len(xs) - len(val_dict[i]))])
+                                for i in range(len(xs) - len(val_dict[i]))])
         # if y axis detects twice
         if len(xs) < len(val_dict[i]):
             val_dict[i] = val_dict[i][-len(xs):]
@@ -257,12 +257,12 @@ def animate(i, ax, plt, xs, val_dict, _show_extra_info, headers):
             ax.plot(x_new, y_smooth, label=device_name)
         else:
             ax.plot(xs, y, label=device_name)
-        #ax.scatter(xs, y)
+        # ax.scatter(xs, y)
     # display legend, attempt to supress warnings
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         ax.legend()
-            
+
     plt.xticks([])
     plt.ylim(-100, 0)
     plt.title("Wifi Devices RSSI against time")
@@ -272,45 +272,45 @@ def animate(i, ax, plt, xs, val_dict, _show_extra_info, headers):
 def wifilyze(**kwargs):
     """ Display wifi analyzed details"""
     global LOADING_HANDLER
-    
+
     _show_graph = kwargs.pop("graph")
     _show_extra_info = kwargs.pop("show_extra_info")
     _analyze_all = kwargs.pop("analyze_all")
     _color = kwargs.get("color", True)
-    
-    headers =["Name", "MAC Address", "RSSI"]
+
+    headers = ["Name", "MAC Address", "RSSI"]
     if _show_extra_info:
         headers.extend(["Frequency", "Quality", "Encryption Type", "Mode of Device", "Channel"])
     if _analyze_all:
         # return _signals and headers of wifi tables if analyze all
         _signals = scan(_color, _show_extra_info)
-        return ( (_signals, headers) )
+        return ((_signals, headers))
     else:
         try:
             LOADING_HANDLER = spin(
-                                before="Initializing ",
-                                after="\nScanning for Wifi Devices")
+                before="Initializing ",
+                after="\nScanning for Wifi Devices")
             if _show_graph:
                 _signals = scan(_show_extra_info)
-                show_header("WIFI") 
+                show_header("WIFI")
                 print(tabulate(_signals, headers=headers, disable_numparse=True))
-                print("\n\n") 
+                print("\n\n")
                 x = []
                 val_dict = {i.address: list() for i in scan(_show_extra_info)}
                 realtimehandler = RealTimePlot(
-                                        func=animate, 
-                                        func_args=(x, val_dict, _show_extra_info, headers)
-                                        )
+                    func=animate,
+                    func_args=(x, val_dict, _show_extra_info, headers)
+                )
                 realtimehandler.animate()
             else:
                 while True:
-                        _signals = scan(_show_extra_info)
-                        if not bool(_signals):
-                            LOADING_HANDLER = spin(before="No Devices found ")
-                        else:
-                            show_header("WIFI")
-                            print(tabulate(_signals, headers=headers, disable_numparse=True))
-                            print("\n\n")
+                    _signals = scan(_show_extra_info)
+                    if not bool(_signals):
+                        LOADING_HANDLER = spin(before="No Devices found ")
+                    else:
+                        show_header("WIFI")
+                        print(tabulate(_signals, headers=headers, disable_numparse=True))
+                        print("\n\n")
         except AdapterUnaccessibleError as e:
             LOADING_HANDLER.terminate()
             show_header("WIFI")

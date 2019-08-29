@@ -5,6 +5,7 @@ import time
 import multiprocessing
 from ._base import term, show_header
 
+
 def rssi_to_colour_str(rssi):
     """
     returns colorcoded rssi value based on range
@@ -23,8 +24,7 @@ def rssi_to_colour_str(rssi):
             color = term.magenta
         else:
             color = term.red
-        return f"{color}{rssi}{term.normal}"
-
+        return "{color}{rssi}{term}".format(color=color, rssi=rssi, term=term.normal)
 
 
 def spinner_func(**kwargs):
@@ -45,6 +45,7 @@ def spinner_func(**kwargs):
         show_header()
         print(msg)
         time.sleep(DELAY)
+
 
 def spin(delay=0.1, before='', after=''):
     """
@@ -116,5 +117,6 @@ class RealTimePlot(object):
             - `ax` arg is used to pass x and y variables to be plotted
             - `plt` arg is used to set axis labels, limits, e.t.c
         """
-        ani = animation.FuncAnimation(self.fig, self.animate_this, fargs=(self.ax, self.plt, *self.animate_this_args), interval=interval)
+        print(self.animate_this_args)
+        # ani = animation.FuncAnimation(self.fig, self.animate_this, fargs=(self.ax, self.plt, *self.animate_this_args), interval=interval)
         self.plt.show()

@@ -1,8 +1,11 @@
+# coding: utf-8
 from blessed import Terminal
 
 term = Terminal()
-# This was generated using toilet
+
+
 def show_header(sub_header=None):
+    # This was generated using toilet
     print(term.clear())
     header = """
       ▄▄▄▄    ▄                         ▀▀█           ▄▄▄▄▄▄       
@@ -18,10 +21,10 @@ def show_header(sub_header=None):
         """
     
     if sub_header:
-        header += f"""
+        header += """
 
         TABLE: {sub_header}
-        """
+        """.format(sub_header=sub_header)
     print(header)
                 
 
