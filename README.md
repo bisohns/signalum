@@ -4,7 +4,7 @@
   <h1> Signalum </h1>
 </p>
 
-A Linux Package to detect and analyze existing connections from wifi and bluetooth
+A Linux Package to detect and analyze existing connections from wifi and bluetooth. Also checkout the [Desktop Application](https://github.com/bisoncorps/signalum-desktop).
 
 - [Signalum](#signalum)
   - [Installation](#installation)

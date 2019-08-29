@@ -1,10 +1,13 @@
 language: python
 python:
+  - "2.7"
+  - "3.4"
   - "3.6"
+  - "3.7"
 
 
 before_install:
-  - sudo apt-get install bluetooth libbluetooth-dev
+  - sudo apt-get install bluetooth libbluetooth-dev python-tk
 
 # Build script (If successfully built - no errors)
 script: make
