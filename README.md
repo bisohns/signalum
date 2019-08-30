@@ -35,7 +35,38 @@ A Linux Package to detect and analyze existing connections from wifi and bluetoo
 
 ## Usage
 
-Signalum comes with a cli tool called `signalyze`
+```python
+   from signalum.core import _bluetooth as bt
+   from signalum.core import _wifi as wf
+
+   kwargs = dict()
+   # avoid showing graph when calling from code
+   kwargs['graph'] = False
+   kwargs['color'] = False
+   kwargs['analyze_all'] = True
+   # no extra info
+   kwargs['show_extra_info'] = True
+   wf_devices = wf.wifilyze(**kwargs)
+   # contains two lists, first is the list of cell objects
+   # print all properties of first Cell object
+   print(wf_devices[0][0].__dict__)
+   # {'ssid': 'Dexter', 
+   # ... ,
+   #   'address': '***********', 
+   #   'encrypted': True, 
+   #   'encryption_type': 'wpa2', 
+   #   'signal': -33,}   
+
+   # show device names 
+   kwargs['show_names'] = True
+   kwargs['show_extra_info']
+   bt_devices = bt.bluelyze(**kwargs)
+   print(bt_devices[0][0])
+   # ['Deven-Dexter', '***********', -59, 'Phone', 'Smartphone', 'Rendering|Object Transfer|Audio|Information|']
+
+```
+
+Signalum also comes with a cli tool called `signalyze`
 ![Demo](output.gif)
 
 ```bash
